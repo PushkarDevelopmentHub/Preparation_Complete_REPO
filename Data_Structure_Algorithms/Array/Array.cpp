@@ -16,3 +16,19 @@ public:
 };
 
 // 2 Question -- Two Sum II - Input Array Is Sorted
+class Solution {
+public:
+    vector<int> twoSum(vector<int>& nums, int target) {
+        int n = nums.size();
+        int i= 0, j= n-1;
+        while(i<j){
+            int s = nums[i]+nums[j];
+            if(s < target) i++;
+            else if(s > target) j--;
+            else{
+                return {i+1, j+1};
+            }
+        }
+        return {-1, -1};
+    }
+};
