@@ -67,3 +67,36 @@ vector<vector<int>> ans;
         return  ans;
     }
 };
+
+
+// 4 Question -- Trapping Rain Water | without stack
+class Solution {
+public:
+    vector<int> getl(vector<int>& h, int &n){
+        vector<int> l(n);
+        l[0] = h[0];
+        for(int i=1; i<n; i++){
+            l[i] = max(l[i-1], h[i]);
+        }
+        return l;
+    }
+    vector<int> getr(vector<int>& h, int &n){
+        vector<int> r(n);
+        r[n-1] = h[n-1];
+        for(int i=n-2; i>=0; i--){
+            r[i] = max(r[i+1], h[i]);
+        }
+        return r;
+    }    
+    int trap(vector<int>& height) {
+        int n = height.size();
+        int sum =0;
+        vector<int> left  = getl(height, n);
+        vector<int> right = getr(height, n);
+        for(int i=0; i<n; i++){
+           int hig= min(left[i], right[i]) - height[i];
+            sum += hig;
+        }
+        return sum;
+    }
+};
