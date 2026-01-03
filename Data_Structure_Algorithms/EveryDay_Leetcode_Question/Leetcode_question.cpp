@@ -27,3 +27,138 @@ public:
     return digits;
   }
 };
+
+
+
+
+//++++++++++++++++++++++
+//Leetcode 961-Repeated Element in Size 2N Array
+//Approach-1 (Using Hashset)
+//T.C : O(n)
+//S.C : O(n)
+class Solution {
+public:
+    int repeatedNTimes(vector<int>& nums) {
+        unordered_set<int> st;
+        
+        for (int &num : nums) {
+            if(st.count(num))
+                return num;
+            
+            st.insert(num);
+        }
+        
+        return -1;
+    }
+};
+
+//Approach-2 (Using 10^4 Size array ~ Constant Space)
+//T.C : O(n)
+//S.C : O(1)
+class Solution {
+public:
+    int repeatedNTimes(vector<int>& nums) {    
+        vector<int> freq(10001, 0);
+        
+        for (int &num : nums) {
+            freq[num]++;
+            if (freq[num] > 1) //all other elements appear exactly once
+                return num;
+        }
+        
+        return -1;
+    }
+};
+
+
+
+//Approach-3 (Without using any extra variable to store space - True Constant Space)
+//T.C : O(n)
+//S.C : O(1)
+class Solution {
+public:
+    int repeatedNTimes(vector<int>& nums) {
+        int n = nums.size();
+        
+        for(int i = 2; i<n; i++) {
+            if(nums[i] == nums[i-1] || nums[i] == nums[i-2])
+                return nums[i];
+        }
+        
+        return nums[n-1]; //or, nums[0]
+    }
+};
+
+
+// Leetcode 1931 -- Painting a Grid With Three Different Colors
+//Approach (Recursion + Memoization)
+//T.C : O(n * S * S * m), where S = total states i.e. 3 * 2^m-1
+//S.C : O((n * S) + (S * m)) where n * S is because of memoization array t, and S * m is for storing columnStates
+class Solution {
+public:
+    vector<vector<int>> t;
+    vector<string> columnStates;
+    const int MOD = 1e9 + 7;
+
+    // Recursively generate all valid column colorings of height 'rows'
+    // such that no two vertically adjacent cells have the same color
+    void generateColumnStates(string currentColumn, int rowsRemaining, char prevColor) {
+        if (rowsRemaining == 0) {
+            columnStates.push_back(currentColumn);
+            return;
+        }
+
+        // Colors: 'R' = Red, 'G' = Green, 'B' = Blue
+        for (char color : {'R', 'G', 'B'}) {
+            if (color == prevColor) 
+                continue;  // adjacent vertical cells must be different
+
+            generateColumnStates(currentColumn + color, rowsRemaining - 1, color);
+        }
+    }
+
+    int solve(int remainingCols, int prevColumnIdx, int m) {
+        if (remainingCols == 0) 
+            return 1;
+        if (t[remainingCols][prevColumnIdx] != -1) 
+            return t[remainingCols][prevColumnIdx];
+
+        int totalWays = 0;
+        string prevColumn = columnStates[prevColumnIdx];
+
+        for (int nextColumnIdx = 0; nextColumnIdx < columnStates.size(); nextColumnIdx++) {
+            string nextColumn = columnStates[nextColumnIdx];
+            bool valid = true;
+
+            // Check horizontal adjacency (no adjacent same color in same row)
+            for (int r = 0; r < m; r++) {
+                if (prevColumn[r] == nextColumn[r]) {
+                    valid = false;
+                    break;
+                }
+            }
+
+            if (valid) {
+                totalWays = (totalWays + solve(remainingCols - 1, nextColumnIdx, m)) % MOD;
+            }
+        }
+
+        return t[remainingCols][prevColumnIdx] = totalWays;
+    }
+
+    int colorTheGrid(int m, int n) {
+        columnStates.clear();
+        generateColumnStates("", m, '#');  // '#' indicates no previous color
+
+        int numColumnPatterns = columnStates.size();
+        t.assign(n, vector<int>(numColumnPatterns, -1));
+
+        int result = 0;
+        for (int i = 0; i < numColumnPatterns; i++) {
+            result = (result + solve(n - 1, i, m)) % MOD;
+        }
+
+        return result;
+    }
+};
+
