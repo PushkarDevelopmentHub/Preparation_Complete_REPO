@@ -100,3 +100,27 @@ public:
         return sum;
     }
 };
+
+
+// 5 Question -- 3Sum Closest
+class Solution {
+public:
+    int threeSumClosest(vector<int>& nums, int target) {
+     int n =  nums.size();
+     int cs = 100000;
+     sort(begin(nums), end(nums));
+     for(int i=0; i<=n-3; i++){
+        int k = i+1;
+        int j = n-1;
+        while(k<j){
+            int s = nums[i]+ nums[k]+nums[j];
+            if(abs(target - s) < abs(target-cs)){
+                cs = s;
+            }
+            if(s< target) k++;
+            else j--;
+        }
+     }
+     return cs;
+    }
+};
