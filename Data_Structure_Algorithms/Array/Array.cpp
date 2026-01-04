@@ -124,3 +124,35 @@ public:
      return cs;
     }
 };
+
+// 6 Question -- Factorial Of Large Numbers
+class Solution {
+public:
+    void multiply(vector<int>& arr, int& size, int multiplier){
+        int carry =0;
+        for(int i=0; i<size; i++){
+            int product = arr[i] * multiplier + carry;
+            arr[i] = product % 10;
+            carry = product / 10;
+        }
+        while(carry){
+            arr[size] = carry % 10;
+            carry = carry / 10;
+            size++;
+        }
+    }
+
+    vector<int> factorial(int N){
+        vector<int> arr(10000, 1);
+        arr[0] = 1;
+        int size = 1;
+        for(int multiplier = 2; multiplier<=N; multiplier++){
+            multiply(arr, size, multiplier);
+        }
+            vector<int> res;
+            for(int i = size -1; i>=0; i--){
+                res.push_back(arr[i]);
+            }
+        return arr;
+    }
+};
