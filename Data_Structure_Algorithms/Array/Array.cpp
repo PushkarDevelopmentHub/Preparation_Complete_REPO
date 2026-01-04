@@ -222,3 +222,55 @@ public:
         return maxwater;
     }
 };
+
+
+// 10 Question -- Spiral Matrix | Leetcode-54
+class Solution {
+public:
+    vector<int> spiralOrder(vector<vector<int>>& matrix) {
+        int m = matrix.size(); //row
+        int n = matrix[0].size(); //col
+
+        int top = 0, bottom= m-1;
+        int left =0, right = n-1;
+        int dir =0;
+        vector<int> res;
+        while(top <= bottom && left <= right){
+            if(dir == 0){
+                //l to r constant row
+                for(int i = left; i<=right; i++){
+                    res.push_back(matrix[top][i]);
+                }           
+                top++;
+            }
+            if(dir == 1){
+                //t to d contant col
+                for(int i = top; i<=bottom; i++){
+                    res.push_back(matrix[i][right]);
+                }
+                right--;
+            }
+            if(dir == 2){
+                //t to d contant col
+                for(int i = right; i>=left; i--){
+                    res.push_back(matrix[bottom][i]);
+                }
+                bottom--;
+            }
+            if(dir == 3){
+                //t to d contant col
+                for(int i = bottom; i>=top; i--){
+                    res.push_back(matrix[i][left]);
+                }
+                left++;
+            }
+            dir++;
+            if(dir == 4){
+                dir = 0;
+            }
+        
+        }
+        return res;
+
+    }
+};
