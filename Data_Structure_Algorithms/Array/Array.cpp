@@ -157,7 +157,7 @@ public:
     }
 };
 
-// 7 Question -- Maximum Product Subarray 
+// 7 Question -- Next Permutation 
 class Solution {
 public:
     void nextPermutation(vector<int>& nums) {
@@ -184,3 +184,5 @@ public:
 
     }
 };
+
+// 8 Question -- Rotate Image
