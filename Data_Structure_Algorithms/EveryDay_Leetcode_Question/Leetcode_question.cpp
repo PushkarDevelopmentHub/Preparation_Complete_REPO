@@ -218,3 +218,69 @@ public:
     }
 };
 
+
+// Leetcode 66 -- Plus One | Constraint Analysis
+// Approach (Simple follow Math Addition Principles) //T.C : O(n) //S.C : O(1)
+class Solution
+{
+public:
+  vector<int> plusOne(vector<int> &digits)
+  {
+    int n = digits.size();
+
+    int i = n - 1; // Start from LSB like usual math addition
+
+    while (i >= 0)
+    {
+      if (digits[i] < 9)
+      {
+        digits[i] += 1;
+        return digits;
+      }
+
+      // else we did get 9
+      digits[i] = 0; // 9+1 = 10
+      i--;
+    }
+
+    digits.insert(begin(digits), 1); // 1 is the carry forwarded till the end
+
+    return digits;
+  }
+};
+
+
+// Leetcode 1390 -- Four Divisors
+class Solution {
+public:
+    int findSumDivisors(int num){
+        int divisors = 0;
+        int sum =0;
+        for(int fact = 1; fact*fact <= num; fact++){
+            if(num%fact ==0){
+                int other = num/fact;
+
+                if(other == fact){
+                    divisors += 1;
+                    sum += fact;
+                }
+                else {
+                    divisors += 2;
+                    sum+= fact +other;
+                }
+            }
+            if(divisors > 4){
+                return 0;
+            }
+        }
+        return divisors == 4 ? sum : 0;
+    }
+    int sumFourDivisors(vector<int>& nums) {
+         int n = nums.size();
+         int result =0;
+         for(int &num : nums){
+            result += findSumDivisors(num);
+         }
+         return result;
+    }
+};
