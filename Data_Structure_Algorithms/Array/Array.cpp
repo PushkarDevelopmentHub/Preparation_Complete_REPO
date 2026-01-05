@@ -100,3 +100,233 @@ public:
         return sum;
     }
 };
+
+
+// 5 Question -- 3Sum Closest
+class Solution {
+public:
+    int threeSumClosest(vector<int>& nums, int target) {
+     int n =  nums.size();
+     int cs = 100000;
+     sort(begin(nums), end(nums));
+     for(int i=0; i<=n-3; i++){
+        int k = i+1;
+        int j = n-1;
+        while(k<j){
+            int s = nums[i]+ nums[k]+nums[j];
+            if(abs(target - s) < abs(target-cs)){
+                cs = s;
+            }
+            if(s< target) k++;
+            else j--;
+        }
+     }
+     return cs;
+    }
+};
+
+// 6 Question -- Factorial Of Large Numbers
+class Solution {
+public:
+    void multiply(vector<int>& arr, int& size, int multiplier){
+        int carry =0;
+        for(int i=0; i<size; i++){
+            int product = arr[i] * multiplier + carry;
+            arr[i] = product % 10;
+            carry = product / 10;
+        }
+        while(carry){
+            arr[size] = carry % 10;
+            carry = carry / 10;
+            size++;
+        }
+    }
+
+    vector<int> factorial(int N){
+        vector<int> arr(10000, 1);
+        arr[0] = 1;
+        int size = 1;
+        for(int multiplier = 2; multiplier<=N; multiplier++){
+            multiply(arr, size, multiplier);
+        }
+            vector<int> res;
+            for(int i = size -1; i>=0; i--){
+                res.push_back(arr[i]);
+            }
+        return arr;
+    }
+};
+
+// 7 Question -- Next Permutation 
+class Solution {
+public:
+    void nextPermutation(vector<int>& nums) {
+        // next_permutation(begin(nums), end(nums));
+
+        //2apporach
+        int n = nums.size();
+        int gola_index =-1;
+        for(int i= n-2; i>=0; i--){
+            if(nums[i]< nums[i+1]){
+                gola_index = i;
+                break;
+            }
+        }
+        if(gola_index != -1){
+            for(int i = n-1; i>=gola_index; i--){
+                if(nums[i] > nums[gola_index]){
+                    swap(nums[i], nums[gola_index]);
+                    break;
+                }
+            }
+        }
+        reverse(nums.begin() + gola_index +1, nums.end());
+
+    }
+};
+
+// 8 Question -- Rotate Image
+class Solution {
+public:
+    void rotate(vector<vector<int>>& matrix) {
+        int n = matrix.size();
+        for(int i=0; i<n; i++){
+            for(int j = i; j<n; j++){
+                swap(matrix[i][j], matrix[j][i]);
+            }
+        }
+        for(int i=0; i<n; i++){
+            reverse(matrix[i].begin(), matrix[i].end());
+        }
+    }
+};
+
+// 9 Question -- Container With Most Water Leetcode 11
+class Solution {
+public:
+    int maxArea(vector<int>& height) {
+        int n= height.size();
+        int i=0, j= n-1;
+        int maxwater = 0;
+        while(i<j){
+            int w = j-i;
+            int h = min(height[i], height[j]);
+            int area = h*w;
+            maxwater = max(area, maxwater);
+            if(height[i] > height[j]){
+                j--;
+            }else{
+                i++;
+            }
+        }
+        return maxwater;
+    }
+};
+
+
+// 10 Question -- Spiral Matrix | Leetcode-54
+class Solution {
+public:
+    vector<int> spiralOrder(vector<vector<int>>& matrix) {
+        int m = matrix.size(); //row
+        int n = matrix[0].size(); //col
+
+        int top = 0, bottom= m-1;
+        int left =0, right = n-1;
+        int dir =0;
+        vector<int> res;
+        while(top <= bottom && left <= right){
+            if(dir == 0){
+                //l to r constant row
+                for(int i = left; i<=right; i++){
+                    res.push_back(matrix[top][i]);
+                }           
+                top++;
+            }
+            if(dir == 1){
+                //t to d contant col
+                for(int i = top; i<=bottom; i++){
+                    res.push_back(matrix[i][right]);
+                }
+                right--;
+            }
+            if(dir == 2){
+                //t to d contant col
+                for(int i = right; i>=left; i--){
+                    res.push_back(matrix[bottom][i]);
+                }
+                bottom--;
+            }
+            if(dir == 3){
+                //t to d contant col
+                for(int i = bottom; i>=top; i--){
+                    res.push_back(matrix[i][left]);
+                }
+                left++;
+            }
+            dir++;
+            if(dir == 4){
+                dir = 0;
+            }
+        
+        }
+        return res;
+
+    }
+};
+
+// 11 Question -- Group Anagrams | using sorting Leetcode 49
+class Solution {
+public:
+    vector<vector<string>> groupAnagrams(vector<string>& strs) {
+        int n = strs.size();
+        vector<vector<string>> res;
+        unordered_map<string, vector<string>> mp;
+        for(int i=0; i<n; i++){
+            string temp = strs[i];
+            sort(temp.begin(), temp.end());
+            mp[temp].push_back(strs[i]);
+        }
+
+        for(auto it : mp){
+            res.push_back(it.second);
+        }
+        return res;
+    }
+};
+
+//Group Anagrams | without sortingGroup Anagrams | without sorting
+class Solution {
+public:
+string generate(string& word){
+    int a[26] = {0};
+    for(char &ch : word){
+        a[ch - 'a']++;
+    }
+    string NW = "";
+    for(int i=0; i<26; i++){
+        int freq = a[i];
+        if(freq > 0){
+            NW += string(freq, i+'a');
+        }
+    }
+    return NW;
+}
+    vector<vector<string>> groupAnagrams(vector<string>& strs) {
+        int n = strs.size();
+        vector<vector<string>> res;
+        unordered_map<string, vector<string>> mp;
+        for(int i=0; i<n; i++){
+            string word = strs[i];
+            
+            string nw = generate(word);
+
+            mp[nw].push_back(strs[i]);
+        }
+
+        for(auto it : mp){
+            res.push_back(it.second);
+        }
+        return res;
+    }
+};
