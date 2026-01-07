@@ -330,3 +330,65 @@ string generate(string& word){
         return res;
     }
 };
+
+// 12 Question -- Sort the Matrix Diagonally | Leetcode 1329 | Similar to Leetcode 498
+// mp[i-j] approach
+class Solution {
+public:
+    vector<vector<int>> diagonalSort(vector<vector<int>>& mat) {
+        int m = mat.size(); //row
+        int n= mat[0].size(); //col
+
+        unordered_map<int, vector<int>> mp;
+        for(int i=0; i<m; i++){
+            for(int j=0; j<n; j++){
+                mp[i-j].push_back(mat[i][j]);
+            }
+        }
+
+        // sort them
+        for(auto &it : mp){
+            sort(begin(it.second), end(it.second));
+        }
+
+        for(int i=m-1; i>=0; i--){
+            for(int j=n-1; j>=0; j--){
+                mat[i][j] = mp[i-j].back();
+                mp[i-j].pop_back();
+            }
+        }
+    return mat;
+    }
+};
+
+
+// 13 Question -- Diagonal Traverse | Leetcode 498 | Similar to Leetcode 1329
+// mp[i+j] approach
+class Solution {
+public:
+    vector<int> findDiagonalOrder(vector<vector<int>>& mat) {
+         int m = mat.size(); //row
+        int n= mat[0].size(); //col
+        vector<int> result;
+
+        map<int, vector<int>> mp;
+        for(int i=0; i<m; i++){
+            for(int j=0; j<n; j++){
+                mp[i+ j].push_back(mat[i][j]);
+            }
+        }
+
+        bool flip = true;
+        for(auto &it : mp){
+            if(flip){
+                reverse(it.second.begin(), it.second.end());
+            }
+            for(int &num : it.second){
+                result.push_back(num);
+            }
+            flip = !flip;
+        }
+        return result;
+        
+    }
+};
