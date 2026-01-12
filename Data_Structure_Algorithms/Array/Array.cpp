@@ -394,3 +394,62 @@ public:
 };
 
 
+// 14 Question -- Sort Colors
+class Solution {
+public:
+    void sortColors(vector<int>& nums) {
+        int n = nums.size();
+int i=0, j=0, k=n-1;
+while(j<=k){
+    if(nums[j]==0){
+        swap(nums[i], nums[j]);
+        i++;
+        j++;
+    }
+    else if(nums[j]==1){
+        j++;
+    }
+    else{
+        swap(nums[j], nums[k]);
+        k--;
+    }
+}
+    }
+}; 
+
+
+// 15 Question -- Find Original Array From Doubled Array
+class Solution {
+public:
+    vector<int> findOriginalArray(vector<int>& changed) {
+        int n= changed.size();
+        if(n%2 != 0){
+            return {};
+        }
+        sort(changed.begin(), end(changed));
+
+        map<int, int> mpp;
+
+        vector<int> res;
+
+        for(auto& num: changed){
+            mpp[num]++;
+        }
+
+        for(auto& num: changed){
+            int twice = 2*num;
+
+            if(mpp[num] == 0) continue; 
+
+            if(mpp.find(twice) == mpp.end() || mpp[twice] == 0){
+                return {};
+            }
+            res.push_back(num);
+
+            mpp[num]--;
+            mpp[twice]--;
+        }
+
+        return res;
+    }
+};
