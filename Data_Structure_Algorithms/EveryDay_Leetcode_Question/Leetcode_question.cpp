@@ -667,3 +667,47 @@ public:
         return steps;
     }
 };
+
+// LeetCode 3453 - Separate Squares I
+class Solution {
+public:
+    double separateSquares(vector<vector<int>>& squares) {
+         int n = squares.size();
+        double totalArea = 0;
+        double high = 0; // maximum possible y-coordinate (top of a square)
+        double lo = 0;   // lower bound (at least 0, since yi>=0)
+        for (auto &s : squares) {
+            int y = s[1], l = s[2];
+            totalArea += (double)l * l;
+            high = max(high, (double)(y + l));
+        }
+        double target = totalArea / 2.0;
+        
+        // Binary search for minimal L such that areaBelow(L) >= target.
+        while (high - lo > 1e-5) {
+            double mid = (lo + high) / 2.0;
+            double areaBelow = 0;
+            for (auto &s : squares) {
+                int y = s[1], l = s[2];
+                if (mid <= y) {
+                    // square is completely above the line
+                    continue;
+                } else if (mid >= y + l) {
+                    // square is completely below the line
+                    areaBelow += (double)l * l;
+                } else {
+                    // square is partially below: rectangle from y to mid
+                    areaBelow += (double)l * (mid - y);
+                }
+            }
+            if (areaBelow >= target) {
+                high = mid; // mid is high enough, try lower
+            } else {
+                lo = mid;
+            }
+        }
+        
+        // At termination, high (or lo) is within 1e-5 of the solution.
+        return high;
+    }
+};
