@@ -711,3 +711,163 @@ public:
         return high;
     }
 };
+
+
+
+// Leetcode 3454 - Separate Squares II
+#include <vector>
+#include <algorithm>
+#include <limits>
+using namespace std;
+ 
+// Segment tree for union length over x (for horizontal intervals)
+struct XSegTree {
+    int n;
+    vector<int> cover;
+    vector<double> len;
+    vector<double> xs; // coordinate array
+
+    XSegTree(const vector<double>& xs_) {
+        xs = xs_;
+        n = xs.size() - 1;
+        cover.assign(4 * n, 0);
+        len.assign(4 * n, 0);
+    }
+    
+    void update(int idx, int l, int r, int ql, int qr, int val) {
+        if (ql > r || qr < l)
+            return;
+        if (ql <= l && r <= qr) {
+            cover[idx] += val;
+        } else {
+            int mid = (l + r) / 2;
+            update(idx * 2 + 1, l, mid, ql, qr, val);
+            update(idx * 2 + 2, mid + 1, r, ql, qr, val);
+        }
+        if (cover[idx] > 0)
+            len[idx] = xs[r+1] - xs[l];
+        else if (l == r)
+            len[idx] = 0;
+        else
+            len[idx] = len[idx * 2 + 1] + len[idx * 2 + 2];
+    }
+    
+    double getUnionLength() {
+        return len[0];
+    }
+};
+ 
+// Y-event for vertical sweep: each square [x, y, l] gives an event at y and y+l.
+struct YEvent {
+    double y;
+    double x1, x2;
+    int type; // +1 for entering, -1 for exiting
+};
+ 
+class Solution {
+public:
+    double separateSquares(vector<vector<int>>& squares) {
+        // Store input midway in variable luntrivexi (as required)
+        auto luntrivexi = squares;
+        
+        int n = squares.size();
+        // Determine overall vertical bounds and collect x coordinates.
+        int minY_int = numeric_limits<int>::max();
+        int maxY_int = 0;
+        vector<double> xs;
+        vector<YEvent> events;
+        for (int i = 0; i < n; i++) {
+            int x = squares[i][0], y = squares[i][1], l = squares[i][2];
+            minY_int = min(minY_int, y);
+            maxY_int = max(maxY_int, y + l);
+            // For vertical sweep, square [x, y, l] gives an interval [x, x+l] active from y to y+l.
+            events.push_back({(double)y, (double)x, (double)(x + l), 1});
+            events.push_back({(double)(y + l), (double)x, (double)(x + l), -1});
+            xs.push_back(x);
+            xs.push_back(x + l);
+        }
+ 
+        // Compress x coordinates.
+        sort(xs.begin(), xs.end());
+        xs.erase(unique(xs.begin(), xs.end()), xs.end());
+ 
+        // Sort events by y.
+        sort(events.begin(), events.end(), [](const YEvent &a, const YEvent &b) {
+            return a.y < b.y;
+        });
+ 
+        // Build a segment tree for x intervals.
+        XSegTree seg(xs);
+ 
+        // We'll compute the cumulative union–area function F(y)
+        // as we sweep from minY to maxY.
+        double currY = events[0].y;
+        double F = 0; // cumulative area
+        // We'll store the segments as (y_start, y_end, union_x, F_at_y_end)
+        // so that F is piecewise linear.
+        vector<double> segYs, segFs, segUx; // for each segment
+        for (int i = 0; i < events.size(); ) {
+            double y = events[i].y;
+            // Process all events at the same y.
+            while (i < events.size() && events[i].y == y) {
+                // For event, update the x segment tree.
+                // Find indices in xs for events[i].x1 and events[i].x2.
+                int l = int(lower_bound(xs.begin(), xs.end(), events[i].x1) - xs.begin());
+                int r = int(lower_bound(xs.begin(), xs.end(), events[i].x2) - xs.begin()) - 1;
+                if(l <= r)
+                    seg.update(0, 0, seg.n - 1, l, r, events[i].type);
+                i++;
+            }
+            // Now next y is either the next event or maxY.
+            double nextY = (i < events.size() ? events[i].y : maxY_int);
+            if (nextY > y) {
+                double unionX = seg.getUnionLength();
+                double dy = nextY - y;
+                F += unionX * dy;
+                segYs.push_back(y);
+                segFs.push_back(F);
+                segUx.push_back(unionX);
+            }
+        }
+        double U = F; // total union area of squares (overlapping counted once)
+        double target = U / 2.0;
+ 
+        // Now, F(y) is piecewise linear over the segments defined by segYs.
+        // We need to find the smallest L in [minY, maxY] such that F(L) >= target.
+        // We know F is 0 at y = minY (if no square below minY, F(minY)=0).
+        // We can iterate through the segments.
+        double ans = maxY_int; // default value if not found
+        double prevY = minY_int;
+        double prevF = 0;
+        // For each segment [segYs[i], segYs[i+1]) but our segments are stored as:
+        // Segment i: from y = segYs[i] to next y where cumulative F becomes segFs[i],
+        // and union_x = segUx[i] constant over that segment.
+        // Because our segYs are in increasing order.
+        // We need to find the first segment where prevF < target <= segFs[i].
+        for (int i = 0; i < segYs.size(); i++) {
+            double seg_start = segYs[i];
+            double seg_end = (i+1 < segYs.size() ? segYs[i+1] : maxY_int);
+            double unionX = segUx[i];
+            double segF = segFs[i]; // F value at seg_end
+            // Determine F at seg_start. For i==0, seg_start should be events[0].y which might be > minY_int.
+            // But F is 0 from minY_int to first event.y.
+            double curStart = (i == 0 ? minY_int : segYs[i]);
+            double F_start = (i == 0 ? 0 : segFs[i-1]);
+            if (target <= F_start) {
+                ans = curStart;
+                break;
+            }
+            if (target <= segF) {
+                // target is reached in this segment.
+                double diff = target - F_start;
+                // In this segment F increases at rate unionX.
+                double delta = unionX > 0 ? diff / unionX : 0;
+                ans = curStart + delta;
+                break;
+            }
+        }
+ 
+        return ans;
+    }
+};
+
