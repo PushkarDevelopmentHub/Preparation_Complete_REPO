@@ -514,3 +514,24 @@ public:
         return -1;
     }
 };
+
+
+// Question - 19 Increasing Triplet Subsequence
+class Solution {
+public:
+    bool increasingTriplet(vector<int>& nums) {
+        int n = nums.size();
+          int n1 = INT_MAX, n2 = INT_MAX, n3;
+          for(int i=0; i<n; i++){
+            n3 = nums[i];
+            if(n3 <= n1){
+                n1 = n3;
+            }else if(n3 <= n2){
+                n2 = n3;
+            }else {
+               return true; 
+            }
+          }
+          return false;
+    }
+};
