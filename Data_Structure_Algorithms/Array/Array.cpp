@@ -454,84 +454,143 @@ public:
     }
 };
 
-
-// 16 Leetcode 1895 -- Largest Magic Square
-//Approach (Simulate trying all squares - optimise using prefix sums)
-//T.C : O(rows * cols * min(rows, cols)^2) --> check my video for its explanation
-//S.C : O(rows * cols)
+// 16 Question -- Sum of Even Numbers After Queries
 class Solution {
 public:
-    int largestMagicSquare(vector<vector<int>>& grid) {
-        int rows = grid.size();
-        int cols = grid[0].size();
+    vector<int> sumEvenAfterQueries(vector<int>& nums, vector<vector<int>>& queries) {
+        int n= nums.size();
+        int q= queries.size();
 
-        // Row wise Prefix Sum
-        vector<vector<int>> rowCumsum(rows, vector<int>(cols));
-        for (int i = 0; i < rows; ++i) {
-            rowCumsum[i][0] = grid[i][0];
-            for (int j = 1; j < cols; ++j) {
-                rowCumsum[i][j] = rowCumsum[i][j - 1] + grid[i][j];
+        int sumEven = 0;
+        vector<int> res;
+
+        //find sumEven
+        for(int &x : nums){
+            if(x%2 ==0 ){
+                sumEven += x;
             }
         }
 
-        // Column wise Prefix Sum
-        vector<vector<int>> colCumsum(rows, vector<int>(cols));
-        for (int j = 0; j < cols; ++j) {
-            colCumsum[0][j] = grid[0][j];
-            for (int i = 1; i < rows; ++i) {
-                colCumsum[i][j] = colCumsum[i - 1][j] + grid[i][j];
-            }
-        }
+            for(int i=0; i<q; i++){
+                int val = queries[i][0];
+                int idx = queries[i][1];
 
-        // I am iterating from largest side to smallest because
-        // as soon as I get a magic square, it will be largest and I will return from there
-        for (int side = min(rows, cols); side >= 2; side--) {
-            
-            // Check square of length = side starting from all possible cells
-            for (int i = 0; i + side - 1 < rows; ++i) {
-                for (int j = 0; j + side - 1 < cols; ++j) {
-
-                    int targetSum = rowCumsum[i][j + side - 1] - (j > 0 ? rowCumsum[i][j - 1] : 0);
-
-                    bool allSame = true;
-
-                    // Check rows
-                    for (int r = i + 1; r < i + side; ++r) {
-                        int rowSum = rowCumsum[r][j + side - 1] - (j > 0 ? rowCumsum[r][j - 1] : 0);
-                        if (rowSum != targetSum) {
-                            allSame = false;
-                            break;
-                        }
-                    }
-                    if (!allSame) 
-                        continue;
-
-                    // Check columns
-                    for (int c = j; c < j + side; ++c) {
-                        int colSum = colCumsum[i + side - 1][c] - (i > 0 ? colCumsum[i - 1][c] : 0);
-                        if (colSum != targetSum) {
-                            allSame = false;
-                            break;
-                        }
-                    }
-                    if (!allSame) 
-                        continue;
-
-                    // Check diagonals
-                    int diag     = 0;
-                    int antiDiag = 0;
-                    for (int k = 0; k < side; ++k) {
-                        diag += grid[i + k][j + k];
-                        antiDiag += grid[i + k][j + side - 1 - k];
-                    }
-
-                    if (diag == targetSum && antiDiag == targetSum) {
-                        return side;
-                    }
+                if(nums[idx] % 2 == 0){
+                    sumEven -= nums[idx];
                 }
-            }
-        }
 
-        return 1;
+                nums[idx] += val;
+
+                if(nums[idx] % 2 == 0){
+                    sumEven += nums[idx];
+                }
+
+                res.push_back(sumEven);
+            }
+
+    return res;
     }
 };
+
+
+// Question 18 - Find Pivot Index | Leetcode 724
+class Solution {
+public:
+    int pivotIndex(vector<int>& nums) {
+        int n = nums.size();
+        int sum =0;
+        for(int &x : nums){
+            sum += x;
+        }
+        int cs = 0;
+        for(int i=0; i<n; i++){
+            int ls = cs;
+            int rs = sum - cs -nums[i];
+            if(ls == rs){
+                return i;
+            }
+            cs += nums[i];
+        }
+        return -1;
+    }
+};
+
+
+// Question - 19 Increasing Triplet Subsequence
+class Solution {
+public:
+    bool increasingTriplet(vector<int>& nums) {
+        int n = nums.size();
+          int n1 = INT_MAX, n2 = INT_MAX, n3;
+          for(int i=0; i<n; i++){
+            n3 = nums[i];
+            if(n3 <= n1){
+                n1 = n3;
+            }else if(n3 <= n2){
+                n2 = n3;
+            }else {
+               return true; 
+            }
+          }
+          return false;
+    }
+};
+
+// Question - 20 -- Largest Perimeter Triangle | Leetcode 976
+class Solution {
+public:
+    int largestPerimeter(vector<int>& nums) {
+        int n = nums.size();
+        sort(nums.begin(), end(nums));
+
+        for(int i= n-3; i>=0; i--){
+            if(nums[i]  + nums[i+1] > nums[i+2]){
+                return nums[i]  + nums[i+1] + nums[i+2];
+            }
+        }
+        return 0;
+    }
+};
+
+// Question - 21 -- Contains Duplicate II | Leetcode 219
+class Solution {
+public:
+    bool containsNearbyDuplicate(vector<int>& nums, int k) {
+        int n = nums.size();
+
+        map<int, int> mp;
+        for(int i=0; i<n; i++){
+            if(mp.find(nums[i]) != mp.end() && 
+            abs(mp[nums[i]] - i) <= k){
+                return true;
+            }else{
+                mp[nums[i]] = i;
+            }
+        }
+    return false;
+    }
+};
+
+// Question - 22 -- Set Mismatch | Leetcode 645
+class Solution {
+public:
+    vector<int> findErrorNums(vector<int>& nums) {
+        int n= nums.size();
+        int dup= -1;
+        int missing = -1;
+        for(int i =0; i<n; i++){
+            if(nums[abs(nums[i]) - 1] <0){
+                dup = abs(nums[i]);
+            }else{
+                nums[abs(nums[i]) - 1] *= (-1);
+            }
+        }
+        for(int i=0; i<n; i++){
+            if(nums[i] > 0){
+                missing = (i+1);
+            }
+        }
+        return {dup, missing};
+    }
+};
+
