@@ -1078,3 +1078,140 @@ public:
         return 1;
     }
 };
+
+
+// LeetCode 1292 -- Maximum Side Length of a Square with Sum Less than or Equal to Threshold
+//Approach-2 (Using 2D Prefix Sum and binarysearch the square side)
+//T.C : O(rows * cols * log(min(rows, cols)))
+//S.C : O(rows * cols)
+class Solution {
+public:
+    int maxSideLength(vector<vector<int>>& mat, int threshold) {
+        int rows = mat.size();
+        int cols = mat[0].size();
+
+        // Build prefix sum
+        vector<vector<int>> prefix(rows, vector<int>(cols, 0));
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                prefix[i][j] = mat[i][j]
+                             + (i > 0 ? prefix[i - 1][j] : 0)
+                             + (j > 0 ? prefix[i][j - 1] : 0)
+                             - (i > 0 && j > 0 ? prefix[i - 1][j - 1] : 0);
+            }
+        }
+
+        // Sum of square (r1,c1) -> (r2,c2)
+        auto sumSquare = [&](int r1, int c1, int r2, int c2) {
+            int sum = prefix[r2][c2];
+            if (r1 > 0) sum -= prefix[r1 - 1][c2];
+            if (c1 > 0) sum -= prefix[r2][c1 - 1];
+            if (r1 > 0 && c1 > 0) sum += prefix[r1 - 1][c1 - 1];
+            return sum;
+        };
+
+        // Check function
+        auto check = [&](int side) {
+            for (int i = 0; i + side - 1 < rows; i++) {
+                for (int j = 0; j + side - 1 < cols; j++) {
+                    if (sumSquare(i, j,
+                                  i + side - 1,
+                                  j + side - 1) <= threshold) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        };
+
+        // Binary search on side length
+        int lo = 1, hi = min(rows, cols);
+        int result = 0;
+
+        while (lo <= hi) {
+            int mid = lo + (hi - lo) / 2;
+            if (check(mid)) {
+                result = mid;
+                lo = mid + 1;
+            } else {
+                hi = mid - 1;
+            }
+        }
+
+        return result;
+    }
+};
+
+
+// Leetcode 3314 --  Construct the Minimum Bitwise Array I
+//Approach (Brute Force All Possible Answers)
+//T.C : O(n)
+//S.C : O(1)
+class Solution {
+public:
+    vector<int> minBitwiseArray(vector<int>& nums) {
+        vector<int> result;
+
+
+        for(int &num : nums) {
+            if(num == 2) {
+                result.push_back(-1);
+                continue;
+            }
+
+            bool found = false;
+            for(int j = 1; j < 32; j++) {
+                if((num & (1 << j)) > 0) { //set bit
+                    continue;
+                }
+
+                //we found an unset bit at jth position
+                result.push_back((num ^ (1 << (j-1)))); //set the first set bit to 0
+                found = true;
+                break;
+            }
+
+            if(!found)
+                result.push_back(-1);
+        }
+
+        return result;
+    }
+};
+
+
+// Leetcode -- 3315 -- Construct the Minimum Bitwise Array I & II
+//Approach (Brute Force All Possible Answers)
+//T.C : O(n)
+//S.C : O(1)
+class Solution {
+public:
+    vector<int> minBitwiseArray(vector<int>& nums) {
+        vector<int> result;
+
+
+        for(int &num : nums) {
+            if(num == 2) {
+                result.push_back(-1);
+                continue;
+            }
+
+            bool found = false;
+            for(int j = 1; j < 32; j++) {
+                if((num & (1 << j)) > 0) { //set bit
+                    continue;
+                }
+
+                //we found an unset bit at jth position
+                result.push_back((num ^ (1 << (j-1)))); //set the first set bit to 0
+                found = true;
+                break;
+            }
+
+            if(!found)
+                result.push_back(-1);
+        }
+
+        return result;
+    }
+};
