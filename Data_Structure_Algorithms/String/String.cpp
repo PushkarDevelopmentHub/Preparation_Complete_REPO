@@ -1,4 +1,4 @@
-// Question -1 -- String Compression | Leetcode 443
+// Question - 1 -- String Compression | Leetcode 443
 class Solution {
 public:
     int compress(vector<char>& chars) {
@@ -23,5 +23,43 @@ public:
         }
        } 
        return index;
+    }
+};
+
+// Question - 2 -- Check if the Sentence Is Pangram | Leetcode 1832
+class Solution {
+public:
+    bool checkIfPangram(string sentence) {
+       int n = sentence.length(); 
+       vector<int> arr(26, 0);
+       for(char &ch : sentence){
+        int index = ch - 'a';
+        arr[index]++;
+       }
+       for(int &count : arr){
+        if(count ==0)
+            return false;
+       }
+
+       return true;
+    }
+};
+class Solution {
+public:
+    bool checkIfPangram(string sentence) {
+       int n = sentence.length(); 
+       vector<int> arr(26, 0);
+       int count = 0;
+       for(char &ch : sentence){
+        int index = ch - 'a';
+        if(arr[index] ==0){
+            arr[index]++;
+            count++;
+        }
+       } 
+
+       if(count ==26) return true;
+       
+       return false;
     }
 };
