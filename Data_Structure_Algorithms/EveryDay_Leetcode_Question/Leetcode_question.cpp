@@ -1345,3 +1345,288 @@ public:
         return operations;
     }
 };
+
+
+
+/*
+    MY YOUTUBE VIDE ON THIS Qn : https://www.youtube.com/watch?v=zpOhlTndBv0
+    Company Tags               : Google
+    Leetcode Link              : https://leetcode.com/problems/shortest-path-in-a-grid-with-obstacles-elimination/
+*/
+
+//Approach-1 - BFS
+class Solution {
+public:
+    vector<vector<int>> directions{{-1, 0}, {0, -1}, {1, 0}, {0, 1}};
+    int shortestPath(vector<vector<int>>& grid, int k) {
+        int m = grid.size();
+        int n = grid[0].size();
+        
+        queue<vector<int>> que;
+        
+        int i = 0, j = 0;
+        que.push({i, j, k});
+        
+        bool visited[41][41][1601];
+        //vector<vector<vector<bool>>> visited(m, vector<vector<bool>>(n, vector<bool>(k)));
+        memset(visited, false, sizeof(visited));
+        
+        int steps = 0;
+        while(!que.empty()) {
+            int size = que.size();
+            while(size--) {
+                vector<int> temp = que.front();
+                que.pop();
+                int curr_i   = temp[0];
+                int curr_j   = temp[1];
+                int obs = temp[2];
+                
+                if(curr_i == m-1 && curr_j == n-1)
+                    return steps;
+                
+                for(vector<int> &dir : directions) {
+                    
+                    int new_i = curr_i + dir[0];
+                    int new_j = curr_j + dir[1];
+                    
+                    if(new_i < 0 || new_i >= m || new_j < 0 || new_j >= n)
+                        continue;
+                    
+                    if(grid[new_i][new_j] == 0 && !visited[new_i][new_j][obs]) {
+                        que.push({new_i, new_j, obs});
+                        visited[new_i][new_j][obs] = true;
+                    } else if(grid[new_i][new_j] == 1 && obs > 0 && !visited[new_i][new_j][obs-1]) {
+                        que.push({new_i, new_j, obs-1});
+                        visited[new_i][new_j][obs-1] = true;
+                    }
+                }
+                
+            }
+            steps++;
+        }
+        
+        return -1;
+    }
+};
+
+
+// Leetcode 1200 -- Minimum Absolute Difference
+class Solution {
+public:
+    vector<vector<int>> minimumAbsDifference(vector<int>& arr) {
+        sort(begin(arr), end(arr));
+        vector<vector<int>> result;
+        int n = arr.size();
+        
+        int minDiff = INT_MAX;
+        for(int i = 1; i < n; i++) {
+            int diff = arr[i] - arr[i-1];
+            minDiff = min(diff, minDiff);
+        }
+        
+        for(int i = 1; i<n; i++) {
+            int diff = arr[i]-arr[i-1];
+            
+            if(diff == minDiff) {
+                result.push_back({arr[i-1], arr[i]});
+            }
+        }
+        
+        
+        return result;
+        
+    }
+};
+
+
+// Leetcode 3455 -- Minimum Cost to Convert String
+//Approach (Dijkstra's Algorithm on Graph)
+class Solution {
+public:
+    void dijkstra(char &source, unordered_map<char, vector<pair<char, int>>> &adj, vector<vector<long long>> &costMatrix) {
+
+        //min-heap
+        priority_queue<pair<int, char>, vector<pair<int, char>>, greater<pair<int, char>>> pq;
+
+        pq.push({0, source});
+
+        while(!pq.empty()) {
+            int d        = pq.top().first;
+            char adjNode = pq.top().second;
+            pq.pop();
+
+            for(auto &it : adj[adjNode]) {
+                char adjNode = it.first;
+                int cost      = it.second;
+
+                if(costMatrix[source - 'a'][adjNode - 'a'] > d + cost) {
+                    costMatrix[source - 'a'][adjNode - 'a'] = d + cost;
+                    pq.push({d + cost, adjNode});
+                }
+            }
+
+        }
+        return;
+    }
+        //V = # of vertices
+    //E = # of edges
+    //O(n * (V+E)log(V))
+    long long minimumCost(string source, string target, vector<char>& original, vector<char>& changed, vector<int>& cost) {
+        unordered_map<char, vector<pair<char, int>>> adj;
+
+        for(int i = 0; i < original.size(); i++) {
+            adj[original[i]].push_back({changed[i], cost[i]});
+        }
+
+        vector<vector<long long>> costMatrix(26, vector<long long>(26, INT_MAX));
+
+        //Populate the costMatrix using Dijkstra's Algorithm
+        for(int i = 0; i < source.length(); i++) { //n
+            char ch = source[i];
+            dijkstra(ch, adj, costMatrix);
+        }
+
+        long long ans = 0;
+
+        for(int i = 0; i < source.length(); i++) {
+            if(source[i] == target[i]) {
+                continue;
+            }
+
+            if(costMatrix[source[i] - 'a'][target[i] - 'a'] == INT_MAX) {
+                return -1;
+            }
+
+            ans += costMatrix[source[i] - 'a'][target[i] - 'a'];
+
+        }
+
+        return ans;
+    }
+};
+
+
+// Leetcode 3456 -- Minimum Cost to Convert String II
+//Approach (Using Dijkstra's Algorithm and DP with Power of Memoization for both)
+/*
+N = length of sourceStr / targetStr
+M = number of conversion rules (original.size())
+L = number of distinct substring lengths
+(L = lengthSet.size())
+V = number of unique strings appearing in original and changed
+E = number of edges in graph (E = M)
+T.C : O(
+          M                           // graph build
+          + M log L                     // lengthSet
+          + N² × L                      // DP overhead
+          + M² × (V + E) log V          // Dijkstra
+        )
+  S.C : O(M² + V + E + N)
+*/
+class Solution {
+public:
+    typedef long long ll;
+    typedef pair<ll, string> P;
+    ll BIG_VALUE = 1e10;
+    unordered_map<string, vector<pair<string, ll>>> adj; //Graph
+
+    //start -> end -> anser
+    unordered_map<string, unordered_map<string, ll>> dijkstraMemo;
+
+    vector<ll> dpMemo;
+
+    string sourceStr;
+    string targetStr;
+    set<int> validLengths;
+    
+    ll dijkstra(string& start, string& end) {
+
+        if(dijkstraMemo[start].count(end)) {
+            return dijkstraMemo[start][end];
+        }
+
+        //{cost, string}
+        priority_queue<P, vector<P>, greater<P>> pq;
+        //vector<int> result(n, INT_MAX)
+        unordered_map<string, ll> result; //source to string ka cost stored
+        result[start] = 0;
+        pq.push({0, start});
+
+        while(!pq.empty()) {
+            ll currCost = pq.top().first;
+            string node = pq.top().second;
+            pq.pop();
+
+            if(node == end) {
+                break;
+            }
+
+            for(auto &edge : adj[node]) {
+                string adjNode = edge.first;
+                ll edgeCost = edge.second;
+
+                if(!result.count(adjNode) || currCost + edgeCost < result[adjNode]) {
+                    result[adjNode] = currCost + edgeCost;
+                    pq.push({currCost+edgeCost, adjNode});
+                }
+            }
+        }
+
+        ll finalCost = result.count(end) ? result[end] : BIG_VALUE;
+
+        return dijkstraMemo[start][end] = finalCost;
+
+    }
+
+    ll solve(int idx) {
+        if(idx >= sourceStr.length())
+            return 0;
+        if(dpMemo[idx] != -1)
+            return dpMemo[idx];
+
+        ll minCost = BIG_VALUE;
+
+        if(sourceStr[idx] == targetStr[idx])
+            minCost = solve(idx+1);
+        
+        for(auto &len : validLengths) {
+            if(idx + len > sourceStr.length()) {
+                break;
+            }
+
+            string srcSub = sourceStr.substr(idx, len);
+            string tgtSub = targetStr.substr(idx, len);
+
+            if(!adj.count(srcSub)) {
+                continue;
+            }
+
+            ll minPathCost = dijkstra(srcSub, tgtSub);
+            if(minPathCost == BIG_VALUE)
+                continue;
+            
+            minCost = min(minCost, minPathCost + solve(idx+len));
+        }
+
+        return dpMemo[idx] = minCost;
+    }
+
+    long long minimumCost(string source, string target, vector<string>& original, vector<string>& changed, vector<int>& cost) {
+        sourceStr = source;
+        targetStr = target;
+
+        dpMemo.assign(10001, -1);
+
+        for(int i = 0; i < original.size(); i++) {
+            adj[original[i]].push_back({changed[i], cost[i]});
+        }
+
+        for(auto &s : original) {
+            validLengths.insert(s.length());
+        }
+
+        ll result = solve(0);
+
+        return result == BIG_VALUE ? -1 : result;
+    }
+};
