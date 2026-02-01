@@ -28,7 +28,7 @@ elif [ "$option" == "3" ]; then
     echo "Using already staged files..."
 else
     echo "Invalid option"
-    exit
+    exit 1
 fi
 
 
@@ -97,7 +97,7 @@ echo "Committed Successfully ✅"
 current_branch=$(git branch --show-current)
 
 echo "Pushing to origin/$current_branch..."
-git push origin $current_branch
+git push origin "$current_branch"
 
 echo "Push Complete 🚀"
 
@@ -110,12 +110,11 @@ read -p "Do you want to create a PR? (y/n): " pr_choice
 
 if [ "$pr_choice" == "y" ]; then
 
-     echo ""
-echo "Fetching remote branches..."
-git fetch --quiet
+    echo ""
+    echo "Fetching remote branches..."
+    git fetch --quiet
 
-# Get clean branch list (remove HEAD)
-branches=($(git branch -r | grep -v HEAD | sed 's/origin\///'))
+    branches=($(git branch -r | grep -v HEAD | sed 's/origin\///'))
 
     echo ""
     echo "Select BASE branch:"
@@ -130,24 +129,20 @@ branches=($(git branch -r | grep -v HEAD | sed 's/origin\///'))
     base=${branches[$((branch_num-1))]}
 
     if [ -z "$base" ]; then
-        echo "Invalid selection!"
+        echo "❌ Invalid selection!"
         exit 1
     fi
 
     echo ""
     echo "Creating PR: $base <- $current_branch"
 
-
-    echo "Creating PR: $base <- $current_branch"
-
     if gh pr create \
-    --base $base \
-    --head $current_branch \
-    --title "$commit_msg" \
-    --body "Automated PR via DSA script"; then
+        --base "$base" \
+        --head "$current_branch" \
+        --title "$commit_msg" \
+        --body "Automated PR via DSA script"; then
 
         echo "✅ PR Created Successfully"
-
     else
         echo "❌ PR Creation Failed!"
         echo "Make sure GitHub CLI is installed and authenticated."
@@ -162,10 +157,47 @@ branches=($(git branch -r | grep -v HEAD | sed 's/origin\///'))
     read -p "Do you want to MERGE the PR? (y/n): " merge_choice
 
     if [ "$merge_choice" == "y" ]; then
-        
+
         gh pr merge --auto --merge
-        
         echo "PR Merged 🎉"
+
+        # -----------------------------
+        # PULL FROM SELECTED BRANCH
+        # -----------------------------
+
+        echo ""
+        read -p "Do you want to pull latest changes from a branch? (y/n): " pull_choice
+
+        if [ "$pull_choice" == "y" ]; then
+            echo ""
+            echo "Fetching remote branches..."
+            git fetch --quiet
+
+            pull_branches=($(git branch -r | grep -v HEAD | sed 's/origin\///'))
+
+            echo ""
+            echo "Select branch to pull from:"
+
+            for i in "${!pull_branches[@]}"; do
+                echo "$((i+1))) ${pull_branches[$i]}"
+            done
+
+            echo ""
+            read -p "Enter number: " pull_num
+
+            pull_branch=${pull_branches[$((pull_num-1))]}
+
+            if [ -z "$pull_branch" ]; then
+                echo "❌ Invalid branch selection"
+                exit 1
+            fi
+
+            echo ""
+            echo "Pulling from origin/$pull_branch with --no-rebase..."
+            git pull origin "$pull_branch" --no-rebase
+
+            echo "✅ Pull completed"
+        fi
     fi
 fi
 
