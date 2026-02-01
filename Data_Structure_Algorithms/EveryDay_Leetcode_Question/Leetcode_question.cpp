@@ -1670,3 +1670,25 @@ public:
         
     }
 };
+
+
+// Leetcode -- 3010 | Divide an Array Into Subarrays With Minimum Cost I 
+class Solution {
+public:
+    int minimumCost(vector<int>& nums) {
+        int n = nums.size();
+        int score = nums[0];
+        int fM = INT_MAX;
+        int sM = INT_MAX;
+
+        for(int i=1; i<n; i++){
+            if(nums[i] < fM){
+                sM= fM;
+                fM = nums[i];
+            }else if(nums[i] < sM){
+                sM = nums[i];
+            }
+        }
+        return score + fM +sM;
+    }
+};
