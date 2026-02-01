@@ -17,12 +17,29 @@ if [ "$option" == "1" ]; then
     git add .
 
 elif [ "$option" == "2" ]; then
-    echo "Select files you want to commit:"
-    git status
     echo ""
-    echo "Enter file names separated by space:"
-    read files
-    git add $files
+    echo "Select files to commit (y/n):"
+    echo ""
+
+    # Get modified & untracked files
+    mapfile -t files < <(git status --porcelain | awk '{print $2}')
+
+    if [ ${#files[@]} -eq 0 ]; then
+        echo "❌ No files to commit"
+        exit 1
+    fi
+
+    for file in "${files[@]}"; do
+        read -p "Add '$file'? (y/n): " choice
+        if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
+            git add "$file"
+            echo "✔ Added $file"
+        else
+            echo "✖ Skipped $file"
+        fi
+        echo ""
+    done
+
 
 elif [ "$option" == "3" ]; then
     echo "Using already staged files..."
@@ -55,6 +72,7 @@ topics=(
 "Dynamic Programming"
 "Tries"
 "Leetcode Daily Solve"
+"GitHub Actions"
 "Custom"
 )
 
