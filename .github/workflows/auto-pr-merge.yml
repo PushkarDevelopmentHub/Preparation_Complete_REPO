@@ -26,7 +26,7 @@ jobs:
 
       - name: Authenticate GitHub CLI
         run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+          echo "${{ secrets.AUTO_PR_TOKEN }}" | gh auth login --with-token
 
       - name: Create & Merge PRs into DEV
         run: |
@@ -34,7 +34,11 @@ jobs:
 
           git fetch --all
 
-          for branch in $(git branch -r | grep -v "$DEV_BRANCH" | grep -v "HEAD" | sed 's/origin\///'); do
+          # Loop through all remote branches except DEV and HEAD
+          for branch in $(git for-each-ref --format='%(refname:short)' refs/remotes/origin | sed 's|origin/||'); do
+            [ "$branch" = "$DEV_BRANCH" ] && continue
+            [ "$branch" = "HEAD" ] && continue
+
             echo "Checking branch: $branch"
 
             # Check if branch has commits not in DEV
@@ -68,7 +72,7 @@ jobs:
 
               if [ -n "$PR_NUMBER" ]; then
                 echo "Merging PR #$PR_NUMBER"
-                gh pr merge "$PR_NUMBER" --merge --admin
+                gh pr merge "$PR_NUMBER" --merge
               fi
             else
               echo "No new commits in $branch"
