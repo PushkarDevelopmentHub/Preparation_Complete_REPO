@@ -1,0 +1,76 @@
+name: Auto PR & Merge to DEV
+
+on:
+  schedule:
+    - cron: '40 23 * * *'   # Runs every day at 11:40 PM UTC
+  workflow_dispatch:       # Optional: manual trigger
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-pr-merge:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup GitHub CLI
+        run: |
+          sudo apt update
+          sudo apt install gh -y
+
+      - name: Authenticate GitHub CLI
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+
+      - name: Create & Merge PRs into DEV
+        run: |
+          DEV_BRANCH="DEV"
+
+          git fetch --all
+
+          for branch in $(git branch -r | grep -v "$DEV_BRANCH" | grep -v "HEAD" | sed 's/origin\///'); do
+            echo "Checking branch: $branch"
+
+            # Check if branch has commits not in DEV
+            if git log origin/$DEV_BRANCH..origin/$branch --oneline | grep -q .; then
+              echo "New commits found in $branch"
+
+              PR_EXISTS=$(gh pr list \
+                --base "$DEV_BRANCH" \
+                --head "$branch" \
+                --state open \
+                --json number \
+                --jq '.[0].number')
+
+              if [ -z "$PR_EXISTS" ]; then
+                echo "Creating PR for $branch → DEV"
+                gh pr create \
+                  --base "$DEV_BRANCH" \
+                  --head "$branch" \
+                  --title "Auto merge: $branch → DEV" \
+                  --body "Daily automated PR from $branch to DEV"
+              else
+                echo "PR already exists for $branch"
+              fi
+
+              PR_NUMBER=$(gh pr list \
+                --base "$DEV_BRANCH" \
+                --head "$branch" \
+                --state open \
+                --json number \
+                --jq '.[0].number')
+
+              if [ -n "$PR_NUMBER" ]; then
+                echo "Merging PR #$PR_NUMBER"
+                gh pr merge "$PR_NUMBER" --merge --admin
+              fi
+            else
+              echo "No new commits in $branch"
+            fi
+          done
