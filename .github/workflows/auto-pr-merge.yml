@@ -3,7 +3,7 @@ name: Auto PR & Merge to DEV
 on:
   schedule:
     - cron: '40 23 * * *'   # Runs every day at 11:40 PM UTC
-  workflow_dispatch:
+  workflow_dispatch:       # Optional: manual trigger
 
 permissions:
   contents: write
@@ -24,35 +24,51 @@ jobs:
           sudo apt update
           sudo apt install gh -y
 
-      - name: Authenticate GitHub CLI
-        env:
-          GH_TOKEN: ${{ secrets.AUTO_PR_TOKEN }}
-        run: |
-          gh auth login --with-token <<< "$GH_TOKEN"
-
       - name: Create & Merge PRs into DEV
+        env:
+          GH_TOKEN: ${{ secrets.AUTO_PR_TOKEN }}   # This makes gh CLI auth silently
         run: |
           DEV_BRANCH="DEV"
           TOTAL_COMMITS=0
           TOTAL_PRS=0
-          TOTAL_MERGED=0
+          TOTAL_MERGES_ATTEMPTED=0
+          TOTAL_MERGES_DONE=0
 
           git fetch --all
 
-          echo "Checking all branches against $DEV_BRANCH..."
-
-          # Loop through all remote branches except DEV and HEAD
           for branch in $(git for-each-ref --format='%(refname:short)' refs/remotes/origin | sed 's|origin/||'); do
-            [ "$branch" = "$DEV_BRANCH" ] && continue
-            [ "$branch" = "HEAD" ] && continue
+            if [ "$branch" = "$DEV_BRANCH" ] || [ "$branch" = "HEAD" ]; then
+              continue
+            fi
 
-            # Count new commits not in DEV
-            NEW_COMMITS=$(git log origin/$DEV_BRANCH..origin/$branch --oneline | wc -l)
-            if [ "$NEW_COMMITS" -gt 0 ]; then
-              echo "Branch $branch has $NEW_COMMITS new commits"
-              TOTAL_COMMITS=$((TOTAL_COMMITS + NEW_COMMITS))
+            echo "Checking branch: $branch"
 
-              # Check if PR exists
+            # Count commits not in DEV
+            COMMITS=$(git log origin/$DEV_BRANCH..origin/$branch --oneline)
+            if [ -n "$COMMITS" ]; then
+              echo "New commits found in $branch"
+              COUNT_COMMITS=$(echo "$COMMITS" | wc -l)
+              TOTAL_COMMITS=$((TOTAL_COMMITS + COUNT_COMMITS))
+
+              PR_EXISTS=$(gh pr list \
+                --base "$DEV_BRANCH" \
+                --head "$branch" \
+                --state open \
+                --json number \
+                --jq '.[0].number')
+
+              if [ -z "$PR_EXISTS" ]; then
+                echo "Creating PR for $branch → DEV"
+                gh pr create \
+                  --base "$DEV_BRANCH" \
+                  --head "$branch" \
+                  --title "Auto merge: $branch → DEV" \
+                  --body "Daily automated PR from $branch to DEV"
+                TOTAL_PRS=$((TOTAL_PRS + 1))
+              else
+                echo "PR already exists for $branch"
+              fi
+
               PR_NUMBER=$(gh pr list \
                 --base "$DEV_BRANCH" \
                 --head "$branch" \
@@ -60,34 +76,27 @@ jobs:
                 --json number \
                 --jq '.[0].number')
 
-              if [ -z "$PR_NUMBER" ]; then
-                echo "Creating PR for $branch → $DEV_BRANCH"
-                PR_NUMBER=$(gh pr create \
-                  --base "$DEV_BRANCH" \
-                  --head "$branch" \
-                  --title "Auto merge: $branch → $DEV_BRANCH" \
-                  --body "Daily automated PR from $branch to $DEV_BRANCH" \
-                  --json number \
-                  --jq '.number')
-                TOTAL_PRS=$((TOTAL_PRS + 1))
-              else
-                echo "PR already exists for $branch (#$PR_NUMBER)"
-              fi
-
-              # Merge PR
               if [ -n "$PR_NUMBER" ]; then
-                echo "Merging PR #$PR_NUMBER"
-                gh pr merge "$PR_NUMBER" --merge --auto
-                TOTAL_MERGED=$((TOTAL_MERGED + 1))
-              fi
+                echo "Attempting to merge PR #$PR_NUMBER"
+                TOTAL_MERGES_ATTEMPTED=$((TOTAL_MERGES_ATTEMPTED + 1))
 
+                # Check if mergeable
+                MERGEABLE=$(gh pr view "$PR_NUMBER" --json mergeable --jq '.mergeable')
+                if [ "$MERGEABLE" = "MERGEABLE" ]; then
+                  gh pr merge "$PR_NUMBER" --merge
+                  TOTAL_MERGES_DONE=$((TOTAL_MERGES_DONE + 1))
+                  echo "Merged PR #$PR_NUMBER"
+                else
+                  echo "Conflict detected in PR #$PR_NUMBER - skipping merge"
+                fi
+              fi
             else
-              echo "Branch $branch has no new commits"
+              echo "No new commits in $branch"
             fi
           done
 
-          echo "---------------------------------------"
-          echo "Total new commits found: $TOTAL_COMMITS"
+          echo "==== Summary for today ===="
+          echo "Total commits found: $TOTAL_COMMITS"
           echo "Total PRs created: $TOTAL_PRS"
-          echo "Total PRs merged: $TOTAL_MERGED"
-          echo "---------------------------------------"
+          echo "Total PR merges attempted: $TOTAL_MERGES_ATTEMPTED"
+          echo "Total PR merges completed: $TOTAL_MERGES_DONE"
