@@ -2,8 +2,8 @@ name: Auto PR & Merge to DEV
 
 on:
   schedule:
-    - cron: '20 6 * * *'   # 11:50 AM IST
-    - cron: '20 18 * * *'  # 11:50 PM IST
+    - cron: '20 6 * * *'    # 11:50 AM IST
+    - cron: '20 18 * * *'   # 11:50 PM IST
   workflow_dispatch:
 
 permissions:
@@ -32,79 +32,97 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          set -e
 
           DEV_BRANCH="DEV"
 
           TOTAL_COMMITS=0
           TOTAL_PRS=0
-          TOTAL_MERGES_ATTEMPTED=0
           TOTAL_MERGES_DONE=0
 
           git fetch --all
 
-          for branch in $(git for-each-ref --format='%(refname:short)' refs/remotes/origin/ | sed 's|origin/||'); do
+          # Get only VALID remote branches
+          branches=$(git branch -r | grep 'origin/' | grep -v 'HEAD' | sed 's|origin/||')
 
+          for branch in $branches; do
+
+            # Skip DEV
             if [ "$branch" = "$DEV_BRANCH" ]; then
+              continue
+            fi
+
+            # Skip main (avoid protected branch PR failures)
+            if [ "$branch" = "main" ]; then
               continue
             fi
 
             echo "Checking branch: $branch"
 
-            COMMITS=$(git log origin/$DEV_BRANCH..origin/$branch --oneline || true)
+            # Skip invalid refs
+            if ! git show-ref --verify --quiet "refs/remotes/origin/$branch"; then
+              continue
+            fi
 
-            if [ -n "$COMMITS" ]; then
+            COMMITS=$(git log origin/$DEV_BRANCH..origin/$branch --oneline 2>/dev/null || true)
 
-              COUNT_COMMITS=$(echo "$COMMITS" | wc -l)
-              TOTAL_COMMITS=$((TOTAL_COMMITS + COUNT_COMMITS))
+            if [ -z "$COMMITS" ]; then
+              echo "No new commits in $branch"
+              continue
+            fi
+
+            COUNT_COMMITS=$(echo "$COMMITS" | wc -l)
+            TOTAL_COMMITS=$((TOTAL_COMMITS + COUNT_COMMITS))
+
+            # Check if PR exists
+            PR_NUMBER=$(gh pr list \
+              --base "$DEV_BRANCH" \
+              --head "$branch" \
+              --state open \
+              --json number \
+              --jq '.[0].number' 2>/dev/null || echo "")
+
+            # Create PR if missing
+            if [ -z "$PR_NUMBER" ]; then
+              echo "Creating PR for $branch"
+
+              gh pr create \
+                --base "$DEV_BRANCH" \
+                --head "$branch" \
+                --title "Auto merge: $branch → $DEV_BRANCH" \
+                --body "Automated PR from scheduler" || true
+
+              TOTAL_PRS=$((TOTAL_PRS + 1))
 
               PR_NUMBER=$(gh pr list \
                 --base "$DEV_BRANCH" \
                 --head "$branch" \
                 --state open \
                 --json number \
-                --jq '.[0].number' || echo "")
-
-              if [ -z "$PR_NUMBER" ]; then
-                echo "Creating PR for $branch"
-                gh pr create \
-                  --base "$DEV_BRANCH" \
-                  --head "$branch" \
-                  --title "Auto merge: $branch → $DEV_BRANCH" \
-                  --body "Automated PR"
-
-                TOTAL_PRS=$((TOTAL_PRS + 1))
-
-                PR_NUMBER=$(gh pr list \
-                  --base "$DEV_BRANCH" \
-                  --head "$branch" \
-                  --state open \
-                  --json number \
-                  --jq '.[0].number' || echo "")
-              fi
-
-              if [ -n "$PR_NUMBER" ]; then
-
-                TOTAL_MERGES_ATTEMPTED=$((TOTAL_MERGES_ATTEMPTED + 1))
-
-                MERGEABLE=$(gh pr view "$PR_NUMBER" --json mergeable --jq '.mergeable')
-
-                if [ "$MERGEABLE" = "CONFLICTING" ]; then
-                  echo "Conflict detected in PR #$PR_NUMBER – skipping merge"
-                else
-                  gh pr merge "$PR_NUMBER" --merge --auto
-                  TOTAL_MERGES_DONE=$((TOTAL_MERGES_DONE + 1))
-                  echo "Merged PR #$PR_NUMBER"
-                fi
-              fi
-
-            else
-              echo "No new commits in $branch"
+                --jq '.[0].number' 2>/dev/null || echo "")
             fi
+
+            # If PR still missing skip
+            if [ -z "$PR_NUMBER" ]; then
+              continue
+            fi
+
+            MERGEABLE=$(gh pr view "$PR_NUMBER" --json mergeable --jq '.mergeable')
+
+            # Skip conflict PRs
+            if [ "$MERGEABLE" = "CONFLICTING" ]; then
+              echo "Conflict detected in PR #$PR_NUMBER – skipping merge"
+              continue
+            fi
+
+            echo "Merging PR #$PR_NUMBER"
+
+            gh pr merge "$PR_NUMBER" --merge --delete-branch || true
+
+            TOTAL_MERGES_DONE=$((TOTAL_MERGES_DONE + 1))
+
           done
 
           echo "==== Summary ===="
           echo "Commits found: $TOTAL_COMMITS"
           echo "PRs created: $TOTAL_PRS"
-          echo "Merge attempts: $TOTAL_MERGES_ATTEMPTED"
           echo "Merged: $TOTAL_MERGES_DONE"
