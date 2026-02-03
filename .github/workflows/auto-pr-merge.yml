@@ -2,8 +2,8 @@ name: Auto PR & Merge to DEV
 
 on:
   schedule:
-    - cron: '10 18 * * *'   # 11:40 PM IST (UTC +5:30)  # Runs every day at 11:40 PM UTC
-  workflow_dispatch:       # Optional: manual trigger
+    - cron: '10 18 * * *'   # 11:40 PM IST (UTC +5:30)
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -26,8 +26,10 @@ jobs:
 
       - name: Create & Merge PRs into DEV
         env:
-          GH_TOKEN: ${{ github.token }}   # This makes gh CLI auth silently
+          GH_TOKEN: ${{ github.token }}
         run: |
+          set -e
+
           DEV_BRANCH="DEV"
           TOTAL_COMMITS=0
           TOTAL_PRS=0
@@ -36,39 +38,31 @@ jobs:
 
           git fetch --all
 
-          for branch in $(git for-each-ref --format='%(refname:short)' refs/remotes/origin | sed 's|origin/||'); do
+          # Iterate only real remote branches (no origin, no HEAD)
+          for branch in $(git branch -r | grep -v '->' | sed 's|origin/||'); do
+
+            # Skip DEV and HEAD
             if [ "$branch" = "$DEV_BRANCH" ] || [ "$branch" = "HEAD" ]; then
+              continue
+            fi
+
+            # Safety check (avoid invalid refs)
+            if ! git show-ref --verify --quiet "refs/remotes/origin/$branch"; then
+              echo "Skipping invalid branch: $branch"
               continue
             fi
 
             echo "Checking branch: $branch"
 
-            # Count commits not in DEV
-            COMMITS=$(git log origin/$DEV_BRANCH..origin/$branch --oneline)
+            # Check commits not in DEV
+            COMMITS=$(git log origin/$DEV_BRANCH..origin/$branch --oneline || true)
+
             if [ -n "$COMMITS" ]; then
               echo "New commits found in $branch"
               COUNT_COMMITS=$(echo "$COMMITS" | wc -l)
               TOTAL_COMMITS=$((TOTAL_COMMITS + COUNT_COMMITS))
 
-              PR_EXISTS=$(gh pr list \
-                --base "$DEV_BRANCH" \
-                --head "$branch" \
-                --state open \
-                --json number \
-                --jq '.[0].number')
-
-              if [ -z "$PR_EXISTS" ]; then
-                echo "Creating PR for $branch → DEV"
-                gh pr create \
-                  --base "$DEV_BRANCH" \
-                  --head "$branch" \
-                  --title "Auto merge: $branch → DEV" \
-                  --body "Daily automated PR from $branch to DEV"
-                TOTAL_PRS=$((TOTAL_PRS + 1))
-              else
-                echo "PR already exists for $branch"
-              fi
-
+              # Check if PR already exists
               PR_NUMBER=$(gh pr list \
                 --base "$DEV_BRANCH" \
                 --head "$branch" \
@@ -76,18 +70,39 @@ jobs:
                 --json number \
                 --jq '.[0].number')
 
+              if [ -z "$PR_NUMBER" ]; then
+                echo "Creating PR for $branch → $DEV_BRANCH"
+                gh pr create \
+                  --base "$DEV_BRANCH" \
+                  --head "$branch" \
+                  --title "Auto merge: $branch → $DEV_BRANCH" \
+                  --body "Daily automated PR from $branch to $DEV_BRANCH"
+                TOTAL_PRS=$((TOTAL_PRS + 1))
+
+                # Fetch the PR number after creation
+                PR_NUMBER=$(gh pr list \
+                  --base "$DEV_BRANCH" \
+                  --head "$branch" \
+                  --state open \
+                  --json number \
+                  --jq '.[0].number')
+              else
+                echo "PR already exists for $branch (#$PR_NUMBER)"
+              fi
+
+              # Attempt merge
               if [ -n "$PR_NUMBER" ]; then
                 echo "Attempting to merge PR #$PR_NUMBER"
                 TOTAL_MERGES_ATTEMPTED=$((TOTAL_MERGES_ATTEMPTED + 1))
 
-                # Check if mergeable
                 MERGEABLE=$(gh pr view "$PR_NUMBER" --json mergeable --jq '.mergeable')
+
                 if [ "$MERGEABLE" = "MERGEABLE" ]; then
-                  gh pr merge "$PR_NUMBER" --merge
+                  gh pr merge "$PR_NUMBER" --merge --auto
                   TOTAL_MERGES_DONE=$((TOTAL_MERGES_DONE + 1))
                   echo "Merged PR #$PR_NUMBER"
                 else
-                  echo "Conflict detected in PR #$PR_NUMBER - skipping merge"
+                  echo "Conflict detected in PR #$PR_NUMBER – skipping merge"
                 fi
               fi
             else
