@@ -26,7 +26,7 @@ jobs:
 
       - name: Create & Merge PRs into DEV
         env:
-          GH_TOKEN: ${{ secrets.AUTO_PR_TOKEN }}   # This makes gh CLI auth silently
+          GH_TOKEN: ${{ github.token }}   # This makes gh CLI auth silently
         run: |
           DEV_BRANCH="DEV"
           TOTAL_COMMITS=0
