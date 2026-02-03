@@ -2,7 +2,6 @@ name: Auto PR & Merge to DEV
 
 on:
   schedule:
-    schedule:
     - cron: '20 6 * * *'   # 11:50 AM IST
     - cron: '20 18 * * *'  # 11:50 PM IST
   workflow_dispatch:
