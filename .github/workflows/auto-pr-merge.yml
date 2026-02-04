@@ -28,8 +28,7 @@ jobs:
       - name: Authenticate GH CLI
         env:
           GH_TOKEN: ${{ secrets.AUTO_PR_TOKEN }}
-        run: |
-          gh auth status
+        run: gh auth status
 
       - name: Create & Merge PRs into DEV
         env:
@@ -47,13 +46,12 @@ jobs:
           branches=$(git branch -r | grep '^  origin/' | grep -v 'HEAD' | sed 's|origin/||')
 
           for branch in $branches; do
-
             [ "$branch" = "$DEV_BRANCH" ] && continue
             [ "$branch" = "main" ] && continue
 
             echo "Checking branch: $branch"
 
-            COMMITS=$(git log origin/$DEV_BRANCH..origin/$branch --oneline 2>/dev/null || true)
+            COMMITS=$(git log origin/$DEV_BRANCH..origin/$branch --oneline || true)
 
             if [ -z "$COMMITS" ]; then
               echo "No new commits in $branch"
@@ -107,4 +105,4 @@ jobs:
           echo "Commits found: $TOTAL_COMMITS"
           echo "PRs created: $TOTAL_PRS"
           echo "Merged: $TOTAL_MERGES_DONE"
-          echo "confilt PRs: $TOTAL_CONFLICTS"
+          echo "Conflict PRs: $TOTAL_CONFLICTS"
