@@ -27,12 +27,12 @@ jobs:
 
       - name: Authenticate GH CLI
         env:
-          GH_TOKEN: ${{ secrets.AUTO_PR_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh auth status
 
       - name: Create & Merge PRs into DEV
         env:
-          GH_TOKEN: ${{ secrets.AUTO_PR_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           DEV_BRANCH="DEV"
 
