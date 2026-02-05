@@ -1762,3 +1762,122 @@ public:
         return nums[0] + result;
     }
 };
+
+
+// Leetcode 3637 -- Trionic Array I | Leetcode 3637
+class Solution {
+public:
+    bool isTrionic(vector<int>& nums) {
+        int n = nums.size();
+        //Need to check the Ince, Dec, Ince
+        int i=0;
+        //Inc
+        while(i+1<n && nums[i] < nums[i+1]){
+            i++;
+        }
+        if(i == 0 || i == n-1){
+            return false;
+        }
+        //Dec
+        while(i+1 <n && nums[i]> nums[i+1]){
+            i++;
+        }
+        if(i == n-1){
+            return false;
+        }
+        //Increasing
+        while(i+1<n && nums[i] < nums[i+1]){
+            i++;
+        }
+
+        return i == n-1;
+    }
+};
+
+
+// Leetcode 3640 -- Trionic Array II |  
+class Solution {
+public:
+    typedef long long ll;
+    int n;
+    vector<vector<ll>> memo;
+    ll solve(int i, int trend, vector<int>& nums){
+        if(i == n){
+            if(trend == 3){
+                return 0;
+            }else{
+                return LLONG_MIN/2;
+            }
+        }
+
+        if(memo[i][trend] != LLONG_MIN){
+            return memo[i][trend];
+        }
+
+
+        ll take = LLONG_MIN/2;
+        ll skip = LLONG_MIN/2;
+        if(trend == 0){
+            skip = solve(i+1, 0, nums);
+        }
+        if(trend == 3){
+            take = nums[i];
+        }
+        if(i+1 <n){
+            int curr = nums[i];
+            int next = nums[i+1];
+            if(trend ==0 && next > curr){
+                take = max(take, curr + solve(i+1, 1, nums));
+            }else if(trend == 1){
+                if(next > curr){
+                    take = max(take, curr + solve(i+1, 1, nums));
+                }else if(next < curr){
+                    take = max(take, curr + solve(i+1, 2, nums));
+                }
+            }else if(trend == 2){
+                if(next < curr){
+                    take = max(take, curr + solve(i+1, 2, nums));
+                }else if(next > curr){
+                    take = max(take, curr + solve(i+1, 3, nums));
+                }
+            }else if(trend ==3 && next > curr){
+                take = max(take, curr + solve(i+1, 3, nums));
+            }
+        }
+        return memo[i][trend] = max(take, skip);
+    }
+    long long maxSumTrionic(vector<int>& nums) {
+        n = nums.size();
+        memo.assign(n+1, vector<ll>(4, LLONG_MIN));
+        return solve(0,0, nums); //solve(i, trend =0)
+    }
+};
+
+
+// Leetcode 3379 -- Transformed Array | Cleanest Implementation | Leetcode 3379
+//Approach (Iterate and find)
+//T.C : O(n) 
+//S.C : O(1)
+class Solution {
+public:
+    vector<int> constructTransformedArray(vector<int>& nums) {
+        int n = nums.size();
+
+        vector<int> result(n, 0);
+
+        for(int i = 0; i < n; i++) {
+            int shift = nums[i]%n; //reducing the large shifts within 0..n-1 range
+
+            int newIdx = (i + shift) % n;
+
+            if(newIdx < 0) {
+                newIdx += n;
+            }
+
+            result[i] = nums[newIdx];
+        }
+
+        return result;
+
+    }
+};

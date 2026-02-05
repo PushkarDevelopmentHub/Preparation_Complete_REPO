@@ -24,6 +24,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install gh -y
+          sudo apt install jq -y
 
       - name: Authenticate GH CLI
         env:
@@ -34,33 +35,38 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -eo pipefail
+
           DEV_BRANCH="DEV"
 
-          TOTAL_COMMITS=0
-          TOTAL_PRS=0
-          TOTAL_MERGES_DONE=0
+          TOTAL_BRANCHES=0
+          TOTAL_PRS_CREATED=0
+          TOTAL_MERGED=0
           TOTAL_CONFLICTS=0
+          CONFLICT_LIST=""
 
-          git fetch --all
+          git fetch --all --prune
 
-          branches=$(git branch -r | grep '^  origin/' | grep -v 'HEAD' | sed 's|origin/||')
+          # Get all remote branches except DEV & main
+          branches=$(git branch -r \
+            | grep 'origin/' \
+            | sed 's|origin/||' \
+            | grep -vE "^(HEAD|main|$DEV_BRANCH)$")
 
           for branch in $branches; do
-            [ "$branch" = "$DEV_BRANCH" ] && continue
-            [ "$branch" = "main" ] && continue
+            echo "🔍 Checking branch: $branch"
 
-            echo "Checking branch: $branch"
+            # Check commits ahead of DEV
+            COMMITS=$(git rev-list --count origin/$DEV_BRANCH..origin/$branch 2>/dev/null || echo 0)
 
-            COMMITS=$(git log origin/$DEV_BRANCH..origin/$branch --oneline || true)
-
-            if [ -z "$COMMITS" ]; then
-              echo "No new commits in $branch"
+            if [ "$COMMITS" -eq 0 ]; then
+              echo "➡️ No commits ahead of DEV"
               continue
             fi
 
-            COUNT_COMMITS=$(echo "$COMMITS" | wc -l)
-            TOTAL_COMMITS=$((TOTAL_COMMITS + COUNT_COMMITS))
+            TOTAL_BRANCHES=$((TOTAL_BRANCHES + 1))
 
+            # Check if PR already exists
             PR_NUMBER=$(gh pr list \
               --base "$DEV_BRANCH" \
               --head "$branch" \
@@ -68,41 +74,62 @@ jobs:
               --json number \
               --jq '.[0].number' || true)
 
+            # Create PR if not exists
             if [ -z "$PR_NUMBER" ]; then
-              echo "Creating PR for $branch"
+              echo "🆕 Creating PR: $DEV_BRANCH <- $branch"
 
               gh pr create \
-                --base "$DEV_BRANCH" \
-                --head "$branch" \
-                --title "Auto merge: $branch → $DEV_BRANCH" \
-                --body "Automated PR from scheduler"
+                -B "$DEV_BRANCH" \
+                -H "$branch" \
+                -t "Auto PR: $branch → $DEV_BRANCH" \
+                -b "Automated PR from GitHub Actions" \
+                || true
 
-              TOTAL_PRS=$((TOTAL_PRS + 1))
+              sleep 3
 
               PR_NUMBER=$(gh pr list \
                 --base "$DEV_BRANCH" \
                 --head "$branch" \
                 --state open \
                 --json number \
-                --jq '.[0].number' || true)
+                --jq '.[0].number')
+
+              TOTAL_PRS_CREATED=$((TOTAL_PRS_CREATED + 1))
             fi
 
-            [ -z "$PR_NUMBER" ] && continue
+            echo "⏳ Checking mergeability for PR #$PR_NUMBER"
+            sleep 5
 
-            MERGEABLE=$(gh pr view "$PR_NUMBER" --json mergeable --jq '.mergeable')
+            PR_INFO=$(gh pr view "$PR_NUMBER" --json mergeable,mergeStateStatus)
 
-            if [ "$MERGEABLE" != "MERGEABLE" ]; then
-              echo "Conflict detected in PR #$PR_NUMBER"
+            MERGEABLE=$(echo "$PR_INFO" | jq -r '.mergeable')
+            MERGE_STATE=$(echo "$PR_INFO" | jq -r '.mergeStateStatus')
+
+            # Merge if clean
+            if [[ "$MERGEABLE" == "MERGEABLE" && "$MERGE_STATE" == "CLEAN" ]]; then
+              echo "✅ Merging PR #$PR_NUMBER"
+
+              gh pr merge "$PR_NUMBER" --merge --delete-branch
+              TOTAL_MERGED=$((TOTAL_MERGED + 1))
+
+            else
+              echo "⚠️ Conflict in PR #$PR_NUMBER from branch $branch"
+
               TOTAL_CONFLICTS=$((TOTAL_CONFLICTS + 1))
-              continue
+              CONFLICT_LIST="$CONFLICT_LIST PR#$PR_NUMBER($branch)"
             fi
 
-            gh pr merge "$PR_NUMBER" --merge --delete-branch
-            TOTAL_MERGES_DONE=$((TOTAL_MERGES_DONE + 1))
           done
 
-          echo "==== Summary ===="
-          echo "Commits found: $TOTAL_COMMITS"
-          echo "PRs created: $TOTAL_PRS"
-          echo "Merged: $TOTAL_MERGES_DONE"
-          echo "Conflict PRs: $TOTAL_CONFLICTS"
+          echo ""
+          echo "================ SUMMARY ================"
+          echo "Branches with commits : $TOTAL_BRANCHES"
+          echo "PRs created          : $TOTAL_PRS_CREATED"
+          echo "PRs merged           : $TOTAL_MERGED"
+          echo "PRs with conflicts   : $TOTAL_CONFLICTS"
+
+          if [ ! -z "$CONFLICT_LIST" ]; then
+            echo "Conflict PRs         : $CONFLICT_LIST"
+          fi
+
+          echo "========================================"
