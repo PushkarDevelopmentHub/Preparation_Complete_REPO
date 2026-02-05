@@ -24,6 +24,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install gh -y
+          sudo apt install jq -y
 
       - name: Authenticate GH CLI
         env:
@@ -42,10 +43,11 @@ jobs:
           TOTAL_PRS_CREATED=0
           TOTAL_MERGED=0
           TOTAL_CONFLICTS=0
+          CONFLICT_LIST=""
 
           git fetch --all --prune
 
-          # ✅ Fixed branch filtering (removes origin/origin bug)
+          # Get all remote branches except DEV & main
           branches=$(git branch -r \
             | grep 'origin/' \
             | sed 's|origin/||' \
@@ -54,15 +56,17 @@ jobs:
           for branch in $branches; do
             echo "🔍 Checking branch: $branch"
 
-            COMMITS=$(git log origin/$DEV_BRANCH..origin/$branch --oneline 2>/dev/null || true)
+            # Check commits ahead of DEV
+            COMMITS=$(git rev-list --count origin/$DEV_BRANCH..origin/$branch 2>/dev/null || echo 0)
 
-            if [ -z "$COMMITS" ]; then
+            if [ "$COMMITS" -eq 0 ]; then
               echo "➡️ No commits ahead of DEV"
               continue
             fi
 
             TOTAL_BRANCHES=$((TOTAL_BRANCHES + 1))
 
+            # Check if PR already exists
             PR_NUMBER=$(gh pr list \
               --base "$DEV_BRANCH" \
               --head "$branch" \
@@ -70,17 +74,19 @@ jobs:
               --json number \
               --jq '.[0].number' || true)
 
-            # ✅ FIXED PR CREATION
+            # Create PR if not exists
             if [ -z "$PR_NUMBER" ]; then
               echo "🆕 Creating PR: $DEV_BRANCH <- $branch"
 
               gh pr create \
-                --base "$DEV_BRANCH" \
-                --head "$branch" \
-                --title "Auto PR: $branch → $DEV_BRANCH" \
-                --body "Automated PR from GitHub Actions"
+                -B "$DEV_BRANCH" \
+                -H "$branch" \
+                -t "Auto PR: $branch → $DEV_BRANCH" \
+                -b "Automated PR from GitHub Actions" \
+                || true
 
-              # ✅ Safely fetch PR number after creation
+              sleep 3
+
               PR_NUMBER=$(gh pr list \
                 --base "$DEV_BRANCH" \
                 --head "$branch" \
@@ -91,23 +97,28 @@ jobs:
               TOTAL_PRS_CREATED=$((TOTAL_PRS_CREATED + 1))
             fi
 
-            echo "⏳ Waiting for GitHub to compute mergeability..."
-            sleep 6
+            echo "⏳ Checking mergeability for PR #$PR_NUMBER"
+            sleep 5
 
             PR_INFO=$(gh pr view "$PR_NUMBER" --json mergeable,mergeStateStatus)
 
             MERGEABLE=$(echo "$PR_INFO" | jq -r '.mergeable')
             MERGE_STATE=$(echo "$PR_INFO" | jq -r '.mergeStateStatus')
 
+            # Merge if clean
             if [[ "$MERGEABLE" == "MERGEABLE" && "$MERGE_STATE" == "CLEAN" ]]; then
-              echo "✅ No conflicts — merging PR #$PR_NUMBER"
+              echo "✅ Merging PR #$PR_NUMBER"
 
               gh pr merge "$PR_NUMBER" --merge --delete-branch
               TOTAL_MERGED=$((TOTAL_MERGED + 1))
+
             else
-              echo "⚠️ Conflict detected in PR #$PR_NUMBER"
+              echo "⚠️ Conflict in PR #$PR_NUMBER from branch $branch"
+
               TOTAL_CONFLICTS=$((TOTAL_CONFLICTS + 1))
+              CONFLICT_LIST="$CONFLICT_LIST PR#$PR_NUMBER($branch)"
             fi
+
           done
 
           echo ""
@@ -116,4 +127,9 @@ jobs:
           echo "PRs created          : $TOTAL_PRS_CREATED"
           echo "PRs merged           : $TOTAL_MERGED"
           echo "PRs with conflicts   : $TOTAL_CONFLICTS"
+
+          if [ ! -z "$CONFLICT_LIST" ]; then
+            echo "Conflict PRs         : $CONFLICT_LIST"
+          fi
+
           echo "========================================"
