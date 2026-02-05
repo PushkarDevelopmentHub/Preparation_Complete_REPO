@@ -34,7 +34,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -e
+          set -eo pipefail
 
           DEV_BRANCH="DEV"
 
@@ -45,18 +45,21 @@ jobs:
 
           git fetch --all --prune
 
-          branches=$(git for-each-ref --format='%(refname)' refs/remotes/origin/ \
-            | grep '^refs/remotes/origin/' \
-            | sed 's|refs/remotes/origin/||' \
-            | grep -v '/' \
+          # ✅ Fixed branch filtering (removes origin/origin bug)
+          branches=$(git branch -r \
+            | grep 'origin/' \
+            | sed 's|origin/||' \
             | grep -vE "^(HEAD|main|$DEV_BRANCH)$")
-
 
           for branch in $branches; do
             echo "🔍 Checking branch: $branch"
 
-            COMMITS=$(git log origin/$DEV_BRANCH..origin/$branch --oneline || true)
-            [ -z "$COMMITS" ] && echo "➡️ No commits ahead of DEV" && continue
+            COMMITS=$(git log origin/$DEV_BRANCH..origin/$branch --oneline 2>/dev/null || true)
+
+            if [ -z "$COMMITS" ]; then
+              echo "➡️ No commits ahead of DEV"
+              continue
+            fi
 
             TOTAL_BRANCHES=$((TOTAL_BRANCHES + 1))
 
@@ -65,24 +68,31 @@ jobs:
               --head "$branch" \
               --state open \
               --json number \
-              --jq '.[0].number')
+              --jq '.[0].number' || true)
 
+            # ✅ FIXED PR CREATION
             if [ -z "$PR_NUMBER" ]; then
               echo "🆕 Creating PR: $DEV_BRANCH <- $branch"
 
-              PR_NUMBER=$(gh pr create \
+              gh pr create \
                 --base "$DEV_BRANCH" \
                 --head "$branch" \
                 --title "Auto PR: $branch → $DEV_BRANCH" \
-                --body "Automated PR from GitHub Actions" \
+                --body "Automated PR from GitHub Actions"
+
+              # ✅ Safely fetch PR number after creation
+              PR_NUMBER=$(gh pr list \
+                --base "$DEV_BRANCH" \
+                --head "$branch" \
+                --state open \
                 --json number \
-                --jq '.number')
+                --jq '.[0].number')
 
               TOTAL_PRS_CREATED=$((TOTAL_PRS_CREATED + 1))
             fi
 
             echo "⏳ Waiting for GitHub to compute mergeability..."
-            sleep 5
+            sleep 6
 
             PR_INFO=$(gh pr view "$PR_NUMBER" --json mergeable,mergeStateStatus)
 
