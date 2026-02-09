@@ -178,3 +178,25 @@ public:
         
     }
 };
+
+
+//  Leetcode 899 -- Orderly Queue
+class Solution {
+public:
+    string orderlyQueue(string s, int k) {
+        // Crux
+        // 1. k =1 brute force
+        // 2. k>2 sort and return the string
+        // 
+        if(k>1){
+            sort(s.begin(), s.end());
+            return s;
+        }
+        string res = s;
+        for(int i=1; i<s.length(); i++){
+            string temp = s.substr(i) + s.substr(0, i);
+            res = min(temp, res);
+        }
+        return res;
+    }
+};
