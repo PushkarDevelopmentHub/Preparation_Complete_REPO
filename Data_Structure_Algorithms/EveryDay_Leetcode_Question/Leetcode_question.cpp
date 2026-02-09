@@ -2076,3 +2076,45 @@ public:
         return isBalanced(root->left) && isBalanced(root->right);
     }
 };
+
+
+// Leecode 1382 -- Balance a Binary Search Tree | Leetcode 1382
+// TC o(n), sc- o(n)
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+class Solution {
+public:
+    TreeNode* solve(int l, int r, vector<int>& vec){
+        if(l>r) return NULL;
+
+        int mid = l + (r-l)/2;
+        TreeNode* root = new TreeNode(vec[mid]);
+        root->left = solve(l, mid-1, vec);
+        root->right =  solve(mid+1, r, vec);
+
+        return root;
+    }
+    void inOrder(TreeNode* root, vector<int>& vec){
+        if(!root) return;
+        inOrder(root->left, vec);
+        vec.push_back(root->val);
+        inOrder(root->right, vec);
+    }
+    TreeNode* balanceBST(TreeNode* root) {
+        vector<int> vec;
+        inOrder(root, vec);
+        
+        int l =0;
+        int r = vec.size()-1;
+        return solve(l, r, vec);
+    }
+};
