@@ -63,3 +63,32 @@ public:
        return false;
     }
 };
+
+
+// Count and Say | Made Super Easy | Simple Explanation | Leetcode 38
+class Solution {
+public:
+    string countAndSay(int n) {
+ /*
+ countAndSay(1) = "1"
+countAndSay(2) = RLE of "1" = "11" ek barr ek likha hai
+countAndSay(3) = RLE of "11" = "21" do bar ek likha hia
+countAndSay(4) = RLE of "21" = "1211" ek barr 2 likha hai 1 bar ek likah hai
+ */       
+      if(n == 1) return "1";
+      string say = countAndSay(n-1);
+      
+      //processing
+      string result = "";
+      for(int i=0; i<say.length(); i++){
+        char ch = say[i];
+        int count =1;
+        while(i< say.length() -1 && say[i] == say[i+1]){
+            count++; 
+            i++;
+        }
+        result += to_string(count) + string(1, ch);
+      }
+    return result;
+    }
+};
