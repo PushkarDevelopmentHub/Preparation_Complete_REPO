@@ -9,6 +9,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  issues: write   # 🔹 ADDED (required to create GitHub issues)
 
 jobs:
   auto-pr-merge:
@@ -44,6 +45,7 @@ jobs:
           TOTAL_MERGED=0
           TOTAL_CONFLICTS=0
           CONFLICT_LIST=""
+          CREATE_CONFLICT_ISSUE=false   # 🔹 ADDED
 
           git fetch --all --prune
 
@@ -111,14 +113,15 @@ jobs:
 
               gh pr merge "$PR_NUMBER" --merge --delete-branch
               TOTAL_MERGED=$((TOTAL_MERGED + 1))
-
+              
             else
               echo "⚠️ Conflict in PR #$PR_NUMBER from branch $branch"
 
               TOTAL_CONFLICTS=$((TOTAL_CONFLICTS + 1))
               CONFLICT_LIST="$CONFLICT_LIST PR#$PR_NUMBER($branch)"
+              CREATE_CONFLICT_ISSUE=true   # 🔹 ADDED
             fi
-
+            
           done
 
           echo ""
@@ -133,3 +136,13 @@ jobs:
           fi
 
           echo "========================================"
+
+          # 🔹 ADDED: Create issue only if conflicts exist
+          if [ "$CREATE_CONFLICT_ISSUE" = true ]; then
+            ISSUE_BODY=$(printf "🚨 Merge conflicts detected during auto-merge process.\n\nConflicted PRs:\n%s\n\nPlease resolve manually." "$CONFLICT_LIST")
+
+            gh issue create \
+              --title "MergeConflict bug" \
+              --label "Merge_Conflict" \
+              --body "$ISSUE_BODY"
+          fi
