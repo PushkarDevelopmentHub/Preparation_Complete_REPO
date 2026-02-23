@@ -3,6 +3,52 @@
 echo "========= DSA GITHUB AUTOMATION ========="
 
 # -----------------------------
+# PULL OPTION FIRST
+# -----------------------------
+
+echo ""
+read -p "Do you want to pull from a branch first? (y/n): " first_pull
+
+if [ "$first_pull" == "y" ]; then
+    echo ""
+    echo "Fetching remote branches..."
+    git fetch --quiet
+
+    branches=($(git branch -r | grep -v HEAD | sed 's/origin\///'))
+
+    if [ ${#branches[@]} -eq 0 ]; then
+        echo "❌ No remote branches found"
+        exit 1
+    fi
+
+    echo ""
+    echo "Select branch to pull from:"
+
+    for i in "${!branches[@]}"; do
+        echo "$((i+1))) ${branches[$i]}"
+    done
+
+    echo ""
+    read -p "Enter number: " branch_num
+
+    selected_branch=${branches[$((branch_num-1))]}
+
+    if [ -z "$selected_branch" ]; then
+        echo "❌ Invalid selection"
+        exit 1
+    fi
+
+    echo ""
+    echo "Pulling from origin/$selected_branch with --no-rebase..."
+    git pull origin "$selected_branch" --no-rebase
+
+    echo "✅ Pull completed"
+    echo ""
+    echo "========= DONE ========="
+    exit 0
+fi
+
+# -----------------------------
 # FILE SELECTION
 # -----------------------------
 
