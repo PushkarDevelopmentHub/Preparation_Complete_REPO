@@ -2768,3 +2768,66 @@ public:
         return solve(root, 0);
     }
 };
+
+
+// Leetcode 1356 -- Sort Integers by The Number of 1 Bits | Leetcode 1356
+class Solution {
+public:
+    int coutOneBits(int num){
+        int count = 0;
+        while(num){
+            count += num & 1;
+            num >>= 1;
+        }
+        return count;
+    }
+    vector<int> sortByBits(vector<int>& arr) {
+    //we need to write the comparator and lambda
+
+    /*******
+  (return         (Capture    (Recive
+   type)  (name)   clause)      Parameters)
+     |      |       |            |
+    auto  lambda = [ ]   (int&a, int&b) {
+        //body 
+    }
+    *******/
+
+//Approach-1 (Using self written countBits function inside lambda)
+//T.C : O(n*logn * log(num)) 
+//The countOneBits loop iterates for the number of bits in the input number, which is log₂(n)
+//sort takes nlogn
+    auto lambda = [&](int &a, int &b){
+        int count_a = coutOneBits(a);
+        int count_b = coutOneBits(b);
+
+        if(count_a == count_b){
+            return a<b;
+        }
+        return count_a <count_b;
+    };
+
+    sort(begin(arr), end(arr), lambda);
+
+    return arr;
+
+//Approach-2 (using inbuilt function)
+//T.C : __builtin_popcount calculates the number of set bits (1 bits) in an integer in constant time, not depending on the size of the integer.
+//So, overall T.C : O(nlogn) by sorting
+
+    auto lambda = [&](int &a, int &b){
+        int count_a = __builtin_popcount(a);
+        int count_b = __builtin_popcount(b);
+
+        if(count_a == count_b){
+            return a<b;
+        }
+        return count_a <count_b;
+    };
+
+    sort(begin(arr), end(arr), lambda);
+
+    return arr;
+
+    }
+};
