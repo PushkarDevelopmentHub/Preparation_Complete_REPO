@@ -3204,3 +3204,13 @@ public:
         return min(start_with_0, n - start_with_0);
     }
 };
+
+
+
+// Leetcode 1784 -- Check If Binary String Has at Most One Segment of Ones | Leetcode 1784
+class Solution {
+public:
+    bool checkOnesSegment(string s) {
+        return s.find("01") == string::npos;
+    }
+};
