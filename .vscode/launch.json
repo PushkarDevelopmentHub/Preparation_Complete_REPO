@@ -20,6 +20,25 @@
           "ignoreFailures": true
         }
       ]
+    },
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "cppdbg",
+      "request": "launch",
+      "args": [],
+      "stopAtEntry": false,
+      "externalConsole": true,
+      "cwd": "c:/Users/kpush/Documents/GitHubFiles/Preparation_Complete_REPO/Data_Structure_Algorithms/EveryDay_Leetcode_Question",
+      "program": "c:/Users/kpush/Documents/GitHubFiles/Preparation_Complete_REPO/Data_Structure_Algorithms/EveryDay_Leetcode_Question/build/Debug/outDebug",
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
     }
   ]
 }
