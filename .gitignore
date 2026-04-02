@@ -13,3 +13,5 @@ security.md
 securefile.txt
 .git-bash.sh
 *git-bash.sh
+Backend/*/node_modules/
+*/*/node_modules/
