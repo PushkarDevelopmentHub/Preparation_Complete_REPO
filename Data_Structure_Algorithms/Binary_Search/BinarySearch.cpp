@@ -207,3 +207,105 @@ int main() {
   // exit
   return 0;
 }
+
+
+
+
+//first occurrence in a sorted array
+#include <bits/stdc++.h>
+using namespace std;
+
+// find last index of key using binary search
+int solve(int n, int key, vector<int>& v) {
+  // initialize search bounds and result
+  int start = 0;
+  int end = n - 1;
+  int res = -1;
+
+  // binary search loop
+  while (start <= end) {
+    // compute mid safely
+    int mid = start + (end - start) / 2;
+    // when match found, store index and move right
+    if (v[mid] == key) {
+      res = mid;
+      start = mid - 1;
+    }
+    // when key is smaller, move left
+    else if (key < v[mid]) {
+      end = mid - 1;
+    }
+    // otherwise move right
+    else {
+      start = mid + 1;
+    }
+  }
+  // return first occurrence or -1
+  return res;
+}
+
+// program entry
+int main() {
+  // define input size and key
+  int n = 7;
+  int key = 13;
+  // define sorted array
+  vector<int> v = {3, 4, 13, 13, 13, 20, 40};
+  // print first occurrence index (or -1)
+  cout << solve(n, key, v) << "\n";
+  // exit
+  return 0;
+}
+
+
+
+// Search Element in a Rotated Sorted Array - I
+#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    // Function to search for target using binary search in rotated sorted array
+    int search(vector<int>& nums, int target) {
+      int l =0, h= nums.size() - 1;
+      while (l<=h)
+      {
+        int mid = l + (h-l)/2;
+        if(nums[mid] == target){
+          return mid;
+        }
+
+        if(nums[l]<=nums[mid]){
+          if(nums[l]<=target && 
+          target < nums[mid]){
+            h= mid-1;
+          }else{
+            l= mid+1;
+          }
+        }
+        else{
+          if(nums[mid]<target &&
+          target <= nums[h]){
+            l= mid+1;
+          }else{
+            h= mid-1;
+          }
+        }
+      }
+      return -1;
+      
+    }
+};
+
+// Driver code
+int main() {
+    vector<int> nums = {4,5,6,7,0,1,2};
+    int target = 0;
+
+    Solution obj;
+    int result = obj.search(nums, target);
+
+    cout << result << endl;
+
+    return 0;
+}
