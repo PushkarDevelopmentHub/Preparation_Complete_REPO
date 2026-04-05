@@ -15,3 +15,4 @@ securefile.txt
 *git-bash.sh
 Backend/*/node_modules/
 */*/node_modules/
+*/*/*.env
