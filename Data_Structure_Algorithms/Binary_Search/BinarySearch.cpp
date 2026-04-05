@@ -264,8 +264,7 @@ int main() {
 using namespace std;
 
 class Solution {
-public:
-    // Function to search for target using binary search in rotated sorted array
+public: 
     int search(vector<int>& nums, int target) {
       int l =0, h= nums.size() - 1;
       while (l<=h)
@@ -309,3 +308,105 @@ int main() {
 
     return 0;
 }
+
+
+//BS-5. Search Element in Rotated Sorted Array II
+#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public: 
+    int search(vector<int>& nums, int target) {
+      int l =0, h= nums.size() - 1;
+      while (l<=h)
+      {
+        int mid = l + (h-l)/2;
+        if(nums[mid] == target){
+          return mid;
+        }
+
+        if(nums[l] == nums[mid] &&
+        nums[mid] == nums[h]){
+          l++;
+          h--;
+          continue;
+        }
+
+        if(nums[l]<=nums[mid]){
+          if(nums[l]<=target && 
+          target < nums[mid]){
+            h= mid-1;
+          }else{
+            l= mid+1;
+          }
+        }
+        else{
+          if(nums[mid]<target &&
+          target <= nums[h]){
+            l= mid+1;
+          }else{
+            h= mid-1;
+          }
+        }
+      }
+      return -1;
+      
+    }
+};
+
+// Driver code
+int main() {
+    vector<int> nums = {4,5,6,7,0,1,2};
+    int target = 0;
+
+    Solution obj;
+    int result = obj.search(nums, target);
+
+    cout << result << endl;
+
+    return 0;
+}
+
+
+
+// Minimum in Rotated Sorted Array
+#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    // Function to find the minimum element using binary search
+    int findMin(vector<int>& nums) {
+      int l =0, h = nums.size()-1;
+      while(l<=h){
+        int mid = l+ (h-l)/2;
+        if(nums[mid]> nums[h]){
+          l= mid+1;
+        }else{
+          h=mid;
+        }
+      }
+      return nums[l];       
+    }
+};
+
+int main() {
+
+    // Input array
+    vector<int> nums = {4, 5, 6, 7, 0, 1, 2};
+
+    // Create object of Solution
+    Solution sol;
+
+    // Call function and store result
+    int result = sol.findMin(nums);
+
+    // Output the result
+    cout << "Minimum element is " << result << endl;
+
+    return 0;
+}
+
+
+
+//
