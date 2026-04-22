@@ -5409,3 +5409,76 @@ public:
         return result;
     }
 };
+
+
+
+
+
+//Minimum Absolute Distance Between Mirror Pairs | Simplest Explanation | Leetcode 3761
+//Approach - Store reverses in map - iterate and find
+//T.C : O(n * log(10(num)))
+//S.C : O(n)
+class Solution {
+public:
+    int getReverse(int n) {
+        int rev = 0;
+
+        while(n > 0) {
+            int rem = n%10;
+
+            rev = rev*10 + rem;
+
+            n /= 10;
+        }
+
+        return rev;
+    }
+    int minMirrorPairDistance(vector<int>& nums) {
+        int n = nums.size();
+
+        unordered_map<int, int> mp; //reversed -> idx
+
+        int result = INT_MAX;
+
+        for(int i = 0; i < n; i++) {
+            if(mp.count(nums[i])) {
+                result = min(result, i - mp[nums[i]]);
+            }
+
+            mp[getReverse(nums[i])] = i;
+        }
+
+        return result == INT_MAX ? -1 : result;
+    }
+};
+
+// 2452. Words Within Two Edits of Dictionary
+class Solution {
+public:
+    vector<string> twoEditWords(vector<string>& queries,
+                                vector<string>& dictionary) {
+        vector<string> result;
+
+        for (string& query : queries) {
+            
+            for (string& s : dictionary) {
+                int diff = 0;
+
+                for (int i = 0; i < query.size(); i++) {
+                    if (query[i] != s[i]) {
+                        ++diff;
+                    }
+
+                    if(diff > 2)
+                        break;
+                }
+
+                if (diff <= 2) {
+                    result.push_back(query);
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+};
