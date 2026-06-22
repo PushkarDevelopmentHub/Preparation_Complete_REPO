@@ -654,3 +654,117 @@ public:
         return maxoverlap;
     }
 };
+
+
+// Question - 25 -- Shortest Path in a Grid with Obstacles Elimination | Leetcode 1293
+class Solution {
+public:
+ vector<vector<int>> directions{{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+    int shortestPath(vector<vector<int>>& grid, int k) {
+        int m = grid.size();
+        int n = grid[0].size();
+
+        queue<vector<int>> que;
+        int i =0, j =0;
+        que.push({0,0,k});
+
+        bool visited[41][41][1601];
+        memset(visited, false, sizeof(visited));
+
+         int steps = 0;
+         while(!que.empty()){
+            int size = que.size();
+            while(size--){
+                vector<int> temp = que.front();
+                que.pop();
+
+                int curr_i = temp[0];
+                int curr_j = temp[1];
+                int obs = temp[2];
+
+                if(curr_i == m-1 && curr_j == n-1){
+                    return steps;
+                }
+
+                for(vector<int> &dir : directions){
+                    int new_i = curr_i + dir[0];
+                    int new_j = curr_j + dir[1];
+
+                    if(new_i <0 || new_i >= m || new_j <0 || new_j >= n) continue;
+
+                    if(grid[new_i][new_j] == 0 && !visited[new_i][new_j][obs]){
+                        que.push({new_i, new_j, obs});
+                        visited[new_i][new_j][obs] = true;
+                    }else if(grid[new_i][new_j] == 1 && obs >0 && !visited[new_i][new_j][obs-1]){
+                        que.push({new_i, new_j, obs-1});
+                        visited[new_i][new_j][obs-1] = true;
+                    }
+                }
+            }
+            steps++;
+         }
+        
+        return -1;
+    }
+};
+
+
+
+// Question - 26 -- Toeplitz Matrix | Leetcode 766
+class Solution {
+public:
+    bool isToeplitzMatrix(vector<vector<int>>& matrix) {
+        int m  = matrix.size();
+        int n = matrix[0].size();
+
+        for(int i=1; i<m; i++){
+            for(int j= 1; j<n; j++){
+                if(matrix[i][j] != matrix[i-1][j-1]){
+                    return false;
+                }
+            }
+        }
+            return true;
+    }
+};
+
+
+// Question - 27 -- Where Will the Ball Fall | Leetcode 1706
+class Solution {
+public:
+    vector<int> findBall(vector<vector<int>>& grid) {
+        int m = grid.size();
+        int n = grid[0].size();
+        vector<int> res;
+        for(int ball = 0; ball <n; ball++){
+            int row=0; 
+            int col = ball;
+            bool atka = false;
+            while(row<m && col <n){
+                if(grid[row][col] == 1){
+                    if(col == n-1 || grid[row][col+1] == -1){
+                        atka = true;
+                        break;
+                    }
+                    col++;
+                }else{
+                    if(col == 0 || grid[row][col-1] == 1){
+                        atka = true;
+                        break;
+                    }
+                    col--;
+                }
+                row++;
+            }
+            if(atka == true){
+                res.push_back(-1);
+            }else{
+                res.push_back(col);
+            }
+        }
+        return res;
+    }
+};
+
+
+//  Question - 28 -- Valid Sudoku | Leetcode 36

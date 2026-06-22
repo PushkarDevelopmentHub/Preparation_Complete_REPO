@@ -2964,7 +2964,7 @@ public:
 
 
 
-// Leetcode 1680 -- Concatenation of Consecutive Binary Numbers | Leetcode 1680
+// Leetcode 1536 -- Minimum Swaps to Arrange a Binary Grid | Leetcode 1680
 class Solution {
 public:
     int M = 1e9+7;
@@ -2984,3 +2984,2974 @@ public:
     }
 };
 
+
+
+// Leetcode 3636 -- Minimum Swaps to Arrange a Binary Grid | Leetcode 3636
+class Solution {
+public:
+    int minSwaps(vector<vector<int>>& grid) {
+    //    1. find endZeros[i] = no. of continuous 0s at the end
+    // 2. for each row(i)-> need 0s(n-i-1)
+    //                      |-> check the nearest row having 0s >= nee
+    // if not found retrun -1 
+    // else swapsteps     = j-1    
+
+    int n = grid.size();
+    vector<int> endZeros(n, 0);
+    for(int i=0; i<n; i++){
+        int j = n - 1;
+        int count =0;
+        while(j >=0 && grid[i][j] == 0){
+            count++;
+            j--;
+        }
+     endZeros[i] = count;    
+     }
+
+    int steps = 0;
+    for(int i=0; i<n; i++){
+        int need = n- i-1;
+        int j = i;
+        while(j< n && endZeros[j] < need){
+            j++;
+        }
+        if(j == n){
+            return -1;
+        }
+        steps += j-i;
+        while(j>i){
+            swap(endZeros[j], endZeros[j-1]);
+            j--;
+        }
+    }
+    return steps;
+
+
+    }
+};
+
+
+
+// Leetcode 1545 -- Find Kth Bit in Nth Binary String | Leetcode 1545
+//Approach - Recursion
+//T.C : O(n)
+//S.C : O(n)
+class Solution {
+public:
+    char findKthBit(int n, int k) {
+        
+        if(n == 1) {
+            return '0';
+        }
+
+        int length = (1 << n) - 1; //pow(2, n) - 1
+
+        if(k < ceil(length/2.0)) {
+            return findKthBit(n-1, k);
+        } else if(k == ceil(length/2.0)) {
+            return '1';
+        } else {
+            char ch = findKthBit(n-1, length-(k-1)); //handled reversed
+            return (ch == '0') ? '1' : '0'; //handled flipped bit
+        }
+
+    }
+};
+
+
+
+// Leetcode 1582 -- Special Positions in a Binary Matrix | Leetcode 1582
+//Approach-1 (Brute Force)
+//T.C : O((m*n) (m+n))
+//S.C : O(1)
+class Solution {
+public:
+
+    int numSpecial(vector<vector<int>>& mat) {
+        int result = 0;
+        int m = mat.size();
+        int n = mat[0].size();
+        
+        for (int row = 0; row < m; row++) {
+            for (int col = 0; col < n; col++) {
+                if (mat[row][col] == 0) {
+                    continue;
+                }
+                
+                bool good = true;
+                //Check Row
+                for (int r = 0; r < m; r++) {
+                    if (r != row && mat[r][col] == 1) {
+                        good = false;
+                        break;
+                    }
+                }
+                
+                //Check Col
+                for (int c = 0; c < n; c++) {
+                    if (c != col && mat[row][c] == 1) {
+                        good = false;
+                        break;
+                    }
+                }
+                
+                if (good) {
+                    result++;
+                }
+            }
+        }
+        
+        return result;
+    }
+};
+
+
+//Approach-2(Storing count of 1s in rows and cols)
+//T.C : O(m*n)
+//S.C : O(m+n)
+class Solution {
+public:
+    int numSpecial(vector<vector<int>>& mat) {
+        int m = mat.size();
+        int n = mat[0].size();
+        vector<int> rowCount(m, 0);
+        vector<int> colCount(n, 0);
+        
+        for (int row = 0; row < m; row++) {
+            for (int col = 0; col < n; col++) {
+                if (mat[row][col] == 1) {
+                    rowCount[row]++;
+                    colCount[col]++;
+                }
+            }
+        }
+        
+        int result = 0;
+        for (int row = 0; row < m; row++) {
+            for (int col = 0; col < n; col++) {
+                if (mat[row][col] == 1) {
+                    if (rowCount[row] == 1 && colCount[col] == 1) {
+                        result++;
+                    }
+                }
+            }
+        }
+        
+        return result;
+    }
+};
+
+
+
+
+// Leetcode 1758 -- Minimum Changes To Make Alternating Binary String | Leetcode 1758
+//Approach-1 (String can start from 0, string can start from 1)
+//T.C : O(n)
+//S.C : O(n)
+class Solution {
+public:
+    int minOperations(string s) {
+        int n = s.length();
+        int start_with_0 = 0;
+        int start_with_1 = 0;
+        
+        //010101
+        //101010
+        for(int i = 0; i<n; i++) {
+            if(i%2 == 0) {
+                if(s[i] == '0') {
+                    start_with_1++;
+                } else {
+                    start_with_0++;
+                }
+            } else {
+                if(s[i] == '1') {
+                    start_with_1++;
+                } else {
+                    start_with_0++;
+                }
+            }
+        }
+        
+        return min(start_with_0, start_with_1);
+    }
+};
+
+
+//Approach-2 (No need to calculate both)
+//T.C : O(n)
+//S.C : O(1)
+class Solution {
+public:
+    int minOperations(string s) {
+        int n = s.length();
+        int start_with_0 = 0;
+        
+        //010101
+        //101010
+        for(int i = 0; i<n; i++) {
+            if(i%2 == 0) {
+                if(s[i] == '1') {
+                    start_with_0++;
+                }
+            } else {
+                if(s[i] == '0') {
+                    start_with_0++;
+                }
+            }
+        }
+        
+        return min(start_with_0, n - start_with_0);
+    }
+};
+
+
+
+// Leetcode 1784 -- Check If Binary String Has at Most One Segment of Ones | Leetcode 1784
+class Solution {
+public:
+    bool checkOnesSegment(string s) {
+        return s.find("01") == string::npos;
+    }
+};
+
+// Leetcode 1888 -- Minimum Number of Flips to Make the Binary String Alternating
+//Approach-1 (Sliding Window + modifying input s = s+s)
+//T.C : O(2*n) ~= O(n)
+//S.C : O(2*n) for s1 and s2 and s+=s
+class Solution {
+public:
+    int minFlips(string s) {
+        int n = s.size();
+        s += s;
+
+        string s1, s2;
+
+        for(int i = 0; i < 2*n; i++) {
+            s1 += (i % 2 ? '0' : '1');
+            s2 += (i % 2 ? '1' : '0');
+        }
+
+        int i = 0, j = 0;
+        int result1 = 0, result2 = 0;
+        int result = INT_MAX;
+
+        while(j < 2*n) {
+
+            // expand window
+            if(s[j] != s1[j]) result1++;
+            if(s[j] != s2[j]) result2++;
+
+            // shrink if window exceeds n
+            if(j - i + 1 > n) {
+                if(s[i] != s1[i]) result1--;
+                if(s[i] != s2[i]) result2--;
+                i++;
+            }
+
+            // window size exactly n
+            if(j - i + 1 == n)
+                result = min({result, result1, result2});
+
+            j++;
+        }
+
+        return result;
+    }
+};
+
+
+
+//Approach-2 (Sliding Window + without modifying input)
+//T.C : O(2*n) ~= O(n)
+//S.C : O(2*n) for s1 and s2
+class Solution {
+public:
+    int minFlips(string s) {
+        int n = s.size();
+
+        string s1, s2;
+
+        for(int i = 0; i < 2*n; i++) {
+            s1 += (i % 2 ? '0' : '1');
+            s2 += (i % 2 ? '1' : '0');
+        }
+
+        int i = 0, j = 0;
+        int result1 = 0, result2 = 0;
+        int result = INT_MAX;
+
+        while(j < 2*n) {
+            
+            // expand window
+            if(s[j%n] != s1[j]) 
+                result1++;
+            if(s[j%n] != s2[j]) 
+                result2++;
+
+            // shrink if window exceeds n
+            if(j - i + 1 > n) {
+                if(s[i%n] != s1[i]) 
+                    result1--;
+                if(s[i%n] != s2[i]) 
+                    result2--;
+                i++;
+            }
+
+            // window size exactly n
+            if(j - i + 1 == n)
+                result = min({result, result1, result2});
+
+            j++;
+        }
+
+        return result;
+    }
+};
+
+
+//Approach-3 (Sliding Window + without modifying input)
+//T.C : O(2*n) ~= O(n)
+//S.C : O(1)
+class Solution {
+public:
+    int minFlips(string s) {
+        int n = s.length();
+
+        //khandani sliding window
+        int result = INT_MAX;
+        int flip1 = 0;
+        int flip2 = 0;
+
+        int i = 0;
+        int j = 0;
+
+        while(j < 2*n) {
+
+            char expectedCharS1 = (j%2) ? '1' : '0';
+            char expectedCharS2 = (j%2) ? '0' : '1';
+
+            if(s[j%n] != expectedCharS1) {
+                flip1++;
+            }
+
+            if(s[j%n] != expectedCharS2) {
+                flip2++;
+            }
+
+            if(j-i+1 > n) { //shrink the window from left
+                expectedCharS1 = (i%2) ? '1' : '0';
+                expectedCharS2 = (i%2) ? '0' : '1';
+
+                if(s[i%n] != expectedCharS1) {
+                    flip1--;
+                }
+
+                if(s[i%n] != expectedCharS2) {
+                    flip2--;
+                }
+
+                i++;
+            }
+
+            if(j-i+1 == n) {
+                result = min({result, flip1, flip2});
+            }
+
+            j++;
+
+        }
+        return result;
+    }
+};
+
+
+
+// Leetcode 1980 -- Find Unique Binary String | Leetcode 1980
+//Approach-1 (Using simple conversion)
+//T.C : O(n^2) - Iterating on each string and converting each character to integer
+//S.C : O(n) - Using set
+class Solution {
+public:
+    string findDifferentBinaryString(vector<string>& nums) {
+        unordered_set<int> st;
+        
+        for(string &num : nums) {
+            st.insert(stoi(num, 0, 2));
+        }
+        
+        int n = nums.size();
+        
+        string result= "";
+        
+        for(int number = 0; number <= 65536; number++) {
+            if(st.find(number) == st.end()) {
+                result = bitset<16>(number).to_string();
+                break;
+            }
+        }
+        
+        return result.substr(16-n);
+        
+    }
+};
+
+
+//Approach-2 (Improving above code)
+//We no need to check from 0 to 65536. Only need to check from 0 to n
+//T.C : O(n^2) - Iterating on each string and converting each character to integer
+//S.C : O(n) - Using set
+class Solution {
+public:
+    string findDifferentBinaryString(vector<string>& nums) {
+        unordered_set<int> st;
+        
+        for(string &num : nums) {
+            st.insert(stoi(num, 0, 2));
+        }
+        
+        int n = nums.size();
+        
+        string result= "";
+        
+        for(int number = 0; number <= n; number++) {
+            if(st.find(number) == st.end()) {
+                result = bitset<16>(number).to_string();
+                break;
+            }
+        }
+        
+        return result.substr(16-n);
+        
+    }
+};
+
+
+//Approach-3 (By discarding matching characters in each position)
+//T.C : O(n)
+//S.C : O(1)
+class Solution {
+public:
+    string findDifferentBinaryString(vector<string>& nums) {
+        int n = nums.size();
+        
+        string result;
+        
+        for(int i = 0; i<n; i++) {
+            char ch = nums[i][i];
+            
+            result += (ch == '0') ? "1" : "0";
+        }
+        
+        return result;
+    }
+};
+
+
+
+
+// Leetcode 3129 -- Find All Possible Stable Binary Arrays | Leetcode 3129
+//Approach-1 (Recursion + Memoization)
+//T.C : O(one * zero * limit)
+//S.C : O(one * zero)
+class Solution {
+public:
+    int M = 1e9 + 7;
+    int t[201][201][2];
+
+    int solve(int onesLeft, int zerosLeft, bool lastWasOne, int limit) {
+        if(onesLeft == 0 && zerosLeft == 0) {
+            return 1;
+        }
+
+        if(t[onesLeft][zerosLeft][lastWasOne] != -1) {
+            return t[onesLeft][zerosLeft][lastWasOne];
+        }
+
+
+        int result = 0;
+
+        if(lastWasOne == true) { //explore 0s
+            for(int len = 1; len <= min(zerosLeft, limit); len++) {
+                result = (result + solve(onesLeft, zerosLeft - len, false, limit)) % M;
+            }
+        } else { //explore 1s
+            for(int len = 1; len <= min(onesLeft, limit); len++) {
+                result = (result + solve(onesLeft - len, zerosLeft, true, limit)) % M;
+            }
+        }
+
+        return t[onesLeft][zerosLeft][lastWasOne] = result;
+
+    }
+
+    int numberOfStableArrays(int zero, int one, int limit) {
+        memset(t, -1, sizeof(t));
+        int startWithOne = solve(one, zero, false, limit);
+        int startWithZero = solve(one, zero, true, limit);
+
+        return (startWithOne + startWithZero) % M;
+
+    }
+};
+
+
+//Approach-2 (Bottom Up)
+//T.C : O(one * zero * limit)
+//S.C : O(one * zero)
+class Solution {
+public:
+    int M = 1e9 + 7;
+    int t[201][201][2];
+
+    int numberOfStableArrays(int zero, int one, int limit) {
+
+        memset(t, 0, sizeof(t));
+
+        // Base case: solve(0,0,lastWasOne) = 1
+        t[0][0][0] = 1;
+        t[0][0][1] = 1;
+
+
+        for(int onesLeft = 0; onesLeft <= one; onesLeft++) {
+            for(int zerosLeft = 0; zerosLeft <= zero; zerosLeft++) {
+
+                if(onesLeft == 0 && zerosLeft == 0) continue;
+
+                int result = 0;
+
+                // if(lastWasOne == true) { explore 0s }
+                result = 0;
+                for(int len = 1; len <= min(zerosLeft, limit); len++) {
+                    result = (result + t[onesLeft][zerosLeft - len][0]) % M;
+                }
+                t[onesLeft][zerosLeft][1] = result;
+
+                // else { explore 1s }
+                result = 0;
+                for(int len = 1; len <= min(onesLeft, limit); len++) {
+                    result = (result + t[onesLeft - len][zerosLeft][1]) % M;
+                }
+                t[onesLeft][zerosLeft][0] = result;
+            }
+        }
+
+        int startWithOne  = t[one][zero][false]; //solve(one, zero, false, limit);
+        int startWithZero = t[one][zero][true]; //solve(one, zero, true, limit);
+
+        return (startWithOne + startWithZero) % M;
+    }
+};
+
+
+// LeetCode 3130 -- Find All Possible Stable Binary Arrays II | Leetcode 3130
+//Approach-1 (Recursion + Memoization - Derived from Part-I)
+//T.C : O(one * zero)
+//S.C : O(one * zero)
+class Solution {
+public:
+    int M = 1e9 + 7;
+    vector<vector<vector<int>>> t;
+
+    int solve(int i, int j, int last, int limit) {
+
+        // Base: no elements
+        if (i == 0 && j == 0) 
+            return 0;
+
+        // Base: only zeros left
+        if (j == 0) {
+            if (last == 1) return 0; 
+            return (i <= limit) ? 1 : 0;
+        }
+
+        // Base: only ones left
+        if (i == 0) {
+            if (last == 0) return 0; 
+            return (j <= limit) ? 1 : 0;
+        }
+
+        if (t[i][j][last] != -1)
+            return t[i][j][last];
+
+        int result = 0;
+
+        if (last == 0) {
+            result = (solve(i-1, j, 0, limit) + solve(i-1, j, 1, limit)) % M;
+
+            if (i-1 >= limit)
+                result = (result - solve(i-1-limit, j, 1, limit) + M) % M;
+
+        } else {
+            result = (solve(i, j-1, 0, limit) + solve(i, j-1, 1, limit)) % M;
+
+            if (j-1 >= limit)
+                result = (result - solve(i, j-1-limit, 0, limit) + M) % M;
+        }
+
+        return t[i][j][last] = result;
+    }
+
+    int numberOfStableArrays(int zero, int one, int limit) {
+
+        t.assign(zero+1, vector<vector<int>>(one+1, vector<int>(2, -1)));
+
+        return (solve(zero, one, 0, limit) + solve(zero, one, 1, limit)) % M;
+    }
+};
+
+
+//Approach-2 (Bottom Up - Derived from Part-I)
+//T.C : O(one * zero)
+//S.C : O(one * zero)
+class Solution {
+public:
+    int M = 1e9+7;
+    int numberOfStableArrays(int zero, int one, int limit) {
+        //t[zero+1][one+1][2] 
+        vector<vector<vector<int>>> t(zero+1, vector<vector<int>>(one+1, vector<int>(2, 0)));
+
+        for(int i = 0; i <= min(zero, limit); i++)
+            t[i][0][0] = 1;
+        
+        for(int j = 0; j <= min(one, limit); j++) {
+            t[0][j][1] = 1;
+        }
+
+        for(int i = 0; i <= zero; i++) { //i = # 0s
+            for(int j = 0; j <= one; j++) { //j = # 1s
+
+                if(i == 0 || j == 0)
+                    continue;
+
+                t[i][j][1] = (t[i][j-1][0] + t[i][j-1][1]) % M;
+                
+                if(j-1 >= limit) {
+                    t[i][j][1] = (t[i][j][1] - t[i][j-1-limit][0] + M) % M;
+                }
+
+                t[i][j][0] = (t[i-1][j][0] + t[i-1][j][1]) % M;
+                
+                if(i-1 >= limit) {
+                    t[i][j][0] = (t[i][j][0] - t[i-1-limit][j][1] + M) % M;
+                }
+            }
+        }
+
+        return (t[zero][one][0] + t[zero][one][1]) % M;
+    }
+};
+
+
+
+// Leetcode 1009 -- Complement of Base 10 Integer | Leetcode 1009
+//Approach-1
+//T.C : O(log(n))
+//S.C : O(1)
+class Solution {
+public:
+    int bitwiseComplement(int n) {
+        if(n == 0)
+            return 1;
+        
+        int result = 0;
+        int counter = 0;
+        while(n) {
+            int r = n%2;
+            result += (pow(2,counter)*!r);
+            counter++;
+            n = n>>1;
+        }
+        return result;
+    }
+};
+
+//Approach-2
+//T.C : O(log(n))
+//S.C : O(1)
+class Solution {
+public:
+    int bitwiseComplement(int n) {
+        if (n == 0)
+            return 1;
+
+        int mask = 1;
+
+        while (mask < n) {
+            mask = (mask << 1) | 1;  // builds 111...1
+        }
+        
+        return n ^ mask;
+    }
+};
+
+
+//Approach-3
+//T.C : O(1)
+//S.C : O(1)
+class Solution {
+public:
+    int bitwiseComplement(int n) {
+        if (n == 0)
+            return 1;
+
+        int bits = floor(log2(n)) + 1;  // number of bits
+        int mask = (1 << bits) - 1;     // 2^bits - 1 = 111...1
+
+        return n ^ mask;
+    }
+};
+
+
+
+// Leetcode 3636 -- Maximum Stability of a Spanning Tree | Leetcode 3636
+ //Approach - (Binary Search + DSU)
+//T.C : O(nlog(maxStability - minStability))
+//S.C : O(n+e), n = number of nodes, e = number of edges
+class DSU {
+public:
+    vector<int> parent, rank;
+
+    DSU(int n) {
+        parent.resize(n);
+        rank.resize(n, 1);
+
+        for(int i = 0; i < n; i++) {
+            parent[i] = i;
+        }
+    }
+
+    int find (int x) {
+        if (x == parent[x]) 
+            return x;
+
+        return parent[x] = find(parent[x]);
+    }
+
+    bool Union(int x, int y) {
+        int x_parent = find(x);
+        int y_parent = find(y);
+
+        if (x_parent == y_parent) 
+            return false;
+
+        if(rank[x_parent] > rank[y_parent]) {
+            parent[y_parent] = x_parent;
+        } else if(rank[x_parent] < rank[y_parent]) {
+            parent[x_parent] = y_parent;
+        } else {
+            parent[x_parent] = y_parent;
+            rank[y_parent]++;
+        }
+
+        return true;
+    }
+};
+
+class Solution {
+public:
+
+    bool check(int n, vector<vector<int>>& edges, int k, int mid) {
+        DSU dsu(n);
+
+        vector<vector<int>> upgradeCandidates;
+
+        for(auto &edge : edges) { //E
+            int u = edge[0];
+            int v = edge[1];
+
+            int s = edge[2];
+            int m = edge[3];
+
+            if(m == 1) {
+                if(s < mid) {
+                    return false;
+                }
+
+                dsu.Union(u, v); //alpa
+            } else {
+                if(s >= mid) {
+                    //no need to upgrade
+                    dsu.Union(u, v);
+                } else if(2*s >= mid) {
+                    upgradeCandidates.push_back({u, v});
+                }
+            }
+        }
+
+        for(auto &edge : upgradeCandidates) { //O(E)
+            int u = edge[0];
+            int v = edge[1];
+
+            if(dsu.find(u) != dsu.find(v)) {
+                if(k <= 0)
+                    return false;
+                
+                dsu.Union(u, v);
+                k--; //upgrade
+            }
+        }
+
+
+        int root = dsu.find(0);
+        for(int node = 1; node <= n-1; node++) { //O(n)
+            if(dsu.find(node) != root)
+                return false;
+        }
+        return true;
+    }
+
+    int maxStability(int n, vector<vector<int>>& edges, int k) {
+         /*
+            Input: n = 3, edges = [[0,1,1,1],[1,2,1,1],[2,0,1,1]], k = 0
+            0 --- 1 --- 2 , parent = 0
+            (2, 0)
+            2 ka. parent kaun hai = 0
+            0 ka parent kaun hai  = 0
+
+        */
+
+        DSU dsu(n);
+        for(auto &edge : edges) {
+            int u = edge[0];
+            int v = edge[1];
+
+            int s = edge[2];
+            int m = edge[3];
+
+            if(m == 1) { //must be included in the spanning tree
+                if(dsu.find(u) == dsu.find(v))
+                    return -1;
+                
+                dsu.Union(u, v);
+            }
+        }
+
+
+        int result = -1;
+        int l = 1;
+        int r = 2*1e5;
+
+        //T.C : O(nlogn)
+        while(l <= r) {
+            int mid = l + (r-l)/2;
+
+            if(check(n, edges, k, mid)) {
+                result = mid;
+                l = mid+1;
+            } else {
+                r = mid -1;
+            }
+        }
+
+        return result;
+    }
+};
+
+
+
+// Leetcode 3296 -- Minimum Number of Seconds to Make Mountain Height Zero | Leetcode 3296
+        //Approach (Binary search on answer)
+//T.C : O(n * log(Tmax * mountainHeight^2), where Tmax = maximum time among all workers in the input, n = length of workerTimes
+//S.C : O(1)
+class Solution {
+public:
+    typedef long long ll;
+
+    bool Check(ll mid, vector<int>& workerTimes, int mH) {
+        ll h = 0;
+
+        for(int &t : workerTimes) {
+            h += (ll)(sqrt(2.0 * mid/t + 0.25) - 0.5);
+
+            if(h >= mH) {
+                return true;
+            }
+        }
+
+        return h >= mH;
+    }
+
+    long long minNumberOfSeconds(int mountainHeight, vector<int>& workerTimes) {
+        int maxTime = *max_element(begin(workerTimes), end(workerTimes));
+        ll l = 1;
+        ll r = (ll)maxTime * mountainHeight * (mountainHeight+1)/2;
+
+        ll result = 0;
+
+        while(l <= r) {
+            ll mid = l + (r-l)/2;
+
+            if(Check(mid, workerTimes, mountainHeight)) {
+                result = mid;
+                r = mid-1;
+            } else {
+                l = mid+1;
+            }
+        }
+
+        return result;
+    }
+};
+ 
+
+
+// Leetcode 1415 -- The k-th Lexicographical String of All Happy Strings of Length n | Leetcode 1415
+//Approach-1 (Khandani Backtracking remplate - storing all possible strings)
+//T.C : O(n * 3 * 2^(n-1)) ~= O(n*2^n)
+//S.C : O(n * 2^n) , total 2^n strings eaching having length n
+class Solution {
+public:
+    void solve(int n, string &curr, vector<string> &result) {
+        if (curr.length() == n) {
+            result.push_back(curr);
+            return;
+        }
+        
+        for (char ch = 'a'; ch <= 'c'; ch++) {
+            if (!curr.empty() && curr.back() == ch)
+                continue;
+            
+            // Do
+            curr.push_back(ch);
+
+            // Explore
+            solve(n, curr, result);
+
+            // Undo
+            curr.pop_back();
+        }
+    }
+
+    string getHappyString(int n, int k) {
+        string curr = "";
+        vector<string> result;
+        solve(n, curr, result);
+
+        if (result.size() < k) 
+            return "";
+        
+        return result[k - 1];
+    }
+};
+
+
+
+//Approach-2 (Khandani Backtracking remplate - Without storing all possible strings)
+//T.C : O(n * 3 * 2^(n-1)) ~= O(n*2^n)
+//S.C : O(n) by recursion system stack
+class Solution {
+public:
+    void solve(int n, string &curr, int &count, int k, string &result) {
+        if (curr.length() == n) {
+            count++;
+            if (count == k) {
+                result = curr;  // Store only the k-th string
+            }
+            return;
+        }
+        
+        for (char ch = 'a'; ch <= 'c'; ch++) {
+            if (!curr.empty() && curr.back() == ch)
+                continue;
+            
+            // Do
+            curr.push_back(ch);
+
+            // Explore
+            solve(n, curr, count, k, result);
+
+            // If result is found, exit early
+            if (!result.empty()) return;
+
+            // Undo
+            curr.pop_back();
+        }
+    }
+
+    string getHappyString(int n, int k) {
+        string curr = "";
+        string result = "";
+        int count = 0;
+        
+        solve(n, curr, count, k, result);
+
+        return result;
+    }
+};
+
+
+
+
+// Leetcode 1622 -- Fancy Sequence | Leetcode 1622
+//T.C : O(log(M)) for Binary Exponentiation power(mult, M-2)
+//S.C : O(1)
+class Fancy {
+public:
+    typedef long long ll;
+
+    ll M = 1e9+7;
+
+    vector<ll> seq;
+    ll add = 0;
+    ll mult = 1;
+
+    //Binary Exponentiation for Fermat's Little Theorem -> power(mult, M-2);
+    long long power(long long a, long long b) {
+        if(b == 0)
+            return 1;
+
+        long long half   = power(a, b/2);
+        long long result = (half * half) % M;
+
+        if(b%2 == 1) {
+            result = (result * a) % M;
+        }
+
+        return result;
+    }
+
+    Fancy() {
+        
+    }
+    
+    void append(int val) {
+        long long x = ((val - add) % M + M) * power(mult, M-2)%M;
+        seq.push_back(x);
+    }
+    
+    void addAll(int inc) {
+        add = (add + inc) % M;
+    }
+    
+    void multAll(int m) {
+        mult = (mult * m) % M;
+        add  = (add * m) % M;
+    }
+    
+    int getIndex(int idx) {
+        if(idx >= seq.size())
+            return -1;
+
+        return (seq[idx]*mult + add) % M;
+    }
+};
+
+
+
+
+// Leetcode 1878 -- Get Biggest Three Rhombus Sums in a Grid | Leetcode 1878
+//Approach-1 (Brute Force)
+//T.C : O(m*n * min(m, n)^2)
+//S.C : O(1)
+class Solution {
+public:
+    vector<int> getBiggestThree(vector<vector<int>>& grid) {
+        int m = grid.size();
+        int n = grid[0].size();
+        set<int> st;
+
+        auto addToSet = [&](int val) {
+            st.insert(val);
+            if (st.size() > 3)
+                st.erase(begin(st));
+        };
+
+        for (int r = 0; r < m; r++) {
+            for (int c = 0; c < n; c++) {
+
+                addToSet(grid[r][c]);   //every cell is valid for rohmbus of side = 0
+
+                for (int side = 1; r-side >= 0 && r+side < m && c-side >= 0 && c+side < n; side++) {
+
+                    int sum = 0;
+
+                    for (int k = 0; k < side; k++) {
+                        sum += grid[r - side + k][c + k];   // top to right corner
+                        sum += grid[r + k][c + side - k];   // right to bottom corner
+                        sum += grid[r + side - k][c - k];   // bottom to left corner
+                        sum += grid[r - k][c - side + k];   // left to top corner
+                    }
+
+                    addToSet(sum);
+                }
+            }
+        }
+
+        return vector<int>(rbegin(st), rend(st));
+    }
+};
+
+
+
+
+//Approach-2 (Using Diagonal Prefix Sum to get rid of innermost for loop)
+//T.C : O(m*n * min(m, n))
+//S.C : O(1)
+class Solution {
+public:
+    vector<int> getBiggestThree(vector<vector<int>>& grid) {
+
+        int m = grid.size(), n = grid[0].size();
+
+        //left to right diagonals prefix
+        vector<vector<int>> d1(m, vector<int>(n));
+
+        //right to left diagonals prefix
+        vector<vector<int>> d2(m, vector<int>(n));
+
+        // building d1
+        for(int i = 0; i < m; i++){
+            for(int j = 0; j < n; j++){
+                d1[i][j] = grid[i][j];
+                if(i > 0 && j > 0)
+                    d1[i][j] += d1[i-1][j-1];
+            }
+        }
+
+        // building d2
+        for(int i = 0; i < m; i++){
+            for(int j = n-1; j >= 0; j--){
+                d2[i][j] = grid[i][j];
+                if(i > 0 && j+1 < n)
+                    d2[i][j] += d2[i-1][j+1];
+            }
+        }
+
+        set<int> st;
+
+        auto addToSet = [&](int val){
+            st.insert(val);
+            if(st.size() > 3)
+                st.erase(st.begin());
+        };
+
+        for(int r = 0; r < m; r++){
+            for(int c = 0; c < n; c++){
+
+                // rhombus with side = 0
+                addToSet(grid[r][c]);
+
+                for(int side = 1; r-side >= 0 && r+side < m && c-side >= 0 && c+side < n; side++) {
+                    int sum = 0;
+
+                    int top_r = r-side, top_c = c;
+                    int right_r = r, right_c = c+side;
+                    int bottom_r = r+side, bottom_c = c;
+                    int left_r = r, left_c = c-side;
+
+                    // top to right corner
+                    sum += d1[right_r][right_c];
+                    if(top_r-1 >= 0 && top_c-1 >= 0)
+                        sum -= d1[top_r-1][top_c-1];
+
+                    // right to bottom corner
+                    sum += d2[bottom_r][bottom_c];
+                    if(right_r-1 >= 0 && right_c+1 < n)
+                        sum -= d2[right_r-1][right_c+1];
+
+                    // bottom to left corner
+                    sum += d1[bottom_r][bottom_c];
+                    if(left_r-1 >= 0 && left_c-1 >= 0)
+                        sum -= d1[left_r-1][left_c-1];
+
+                    // left to top corner
+                    sum += d2[left_r][left_c];
+                    if(top_r-1 >= 0 && top_c+1 < n)
+                        sum -= d2[top_r-1][top_c+1];
+
+                    // remove corners counted twice
+                    sum -= grid[top_r][top_c];
+                    sum -= grid[right_r][right_c];
+                    sum -= grid[bottom_r][bottom_c];
+                    sum -= grid[left_r][left_c];
+
+                    addToSet(sum);
+                }
+            }
+        }
+
+        return vector<int>(st.rbegin(), st.rend());
+    }
+};
+
+
+
+
+// Leetcode 3070 -- Count Submatrices with Top-Left Element and Sum Less Than k
+//Approach-1 (Brute Force)
+//T.C : O(m^2 * n^2)
+//S.C : O(1)
+class Solution {
+public:
+    int countSubmatrices(vector<vector<int>>& grid, int k) {
+        int m = grid.size();
+        int n = grid[0].size();
+        int count = 0;
+
+        // Fix the bottom-right corner at (i, j)
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+
+                // Sum from (0,0) to (i,j)
+                int sum = 0;
+                for (int m1 = 0; m1 <= i; m1++) {
+                    for (int n1 = 0; n1 <= j; n1++) {
+                        sum += grid[m1][n1];
+                    }
+                }
+
+                if (sum <= k) count++;
+            }
+        }
+
+        return count;
+    }
+};
+
+
+
+//Approach-2 (Using precomputed results)
+//T.C : O(m*n)
+//S.C : O(1)
+class Solution {
+public:
+    int countSubmatrices(vector<vector<int>>& grid, int k) {
+        int m = grid.size();
+        int n = grid[0].size();
+
+        int count = 0;
+        
+        for(int i = 0; i < m; i++) {
+            for(int j = 0; j < n; j++) {
+                
+                if (i > 0) 
+                  grid[i][j] += grid[i - 1][j];
+                if (j > 0) 
+                  grid[i][j] += grid[i][j - 1];
+                if (i > 0 && j > 0) 
+                  grid[i][j] -= grid[i - 1][j - 1];
+                
+                if(grid[i][j] <= k)
+                    count++;
+                else 
+                    break;
+            }
+        }
+
+        return count;
+    }
+};
+
+
+
+// Leetcode 3212 -- Count Submatrices With Equal Frequency of X and Y | Leetcode 3212
+//Approach (Using Same Cumulative Sum of Submatrices Concept we used in Leetcode 3070)
+//T.C : O(m*n)
+//S.C : O(m*n)
+class Solution {
+public:
+    int numberOfSubmatrices(vector<vector<char>>& grid) {
+        int m = grid.size();
+        int n = grid[0].size();
+
+        vector<vector<int>> cumSumX(m, vector<int>(n, 0));
+        vector<vector<int>> cumSumY(m, vector<int>(n, 0));
+
+        int count = 0;
+
+        for(int i = 0; i < m; i++) {
+            for(int j = 0; j < n; j++) {
+
+                cumSumX[i][j] = (grid[i][j] == 'X');
+                cumSumY[i][j] = (grid[i][j] == 'Y');
+
+                if(i-1 >= 0) {
+                    cumSumX[i][j] += cumSumX[i-1][j];
+                    cumSumY[i][j] += cumSumY[i-1][j];
+                }
+
+                if(j-1 >= 0) {
+                    cumSumX[i][j] += cumSumX[i][j-1];
+                    cumSumY[i][j] += cumSumY[i][j-1];
+                }
+
+                if(i-1 >= 0 && j-1 >= 0) {
+                    cumSumX[i][j] -= cumSumX[i-1][j-1];
+                    cumSumY[i][j] -= cumSumY[i-1][j-1];
+                }
+                
+                if(cumSumX[i][j] == cumSumY[i][j] && cumSumX[i][j] > 0) {
+                    count++;
+                }
+                
+
+            }
+        }
+
+        return count;
+    }
+};
+
+
+
+// Leetcode 3567 -- Minimum Absolute Difference in a k x k Submatrix | Leetcode 3567
+//Approach - Iterate and check all k*k matrices
+//T.C : O(O((m−k)×(n−k)×k^2×logk)
+//S.C : O(k^2)
+class Solution {
+public:
+    vector<vector<int>> minAbsDiff(vector<vector<int>>& grid, int k) {
+        int m = grid.size();
+        int n = grid[0].size();
+        
+        vector<vector<int>> result(m-k+1, vector<int>(n-k+1, 0));
+        
+        for (int i = 0; i <= m-k; i++) {
+            for (int j = 0; j <= n-k; j++) {
+                
+                // Set for distinct + sorted
+                set<int> vals;
+                
+                for (int r = i; r <= i + k - 1; r++) {
+                    for (int c = j; c <= j + k - 1; c++) {
+                        vals.insert(grid[r][c]);
+                    }
+                }
+                
+                // If all elements were same, set has only 1 element
+                if (vals.size() == 1) {
+                    continue;
+                }
+                
+                int minAbsDiff = INT_MAX;
+                auto prev = vals.begin();
+                auto curr = next(prev);
+                
+                while (curr != vals.end()) {
+                    minAbsDiff = min(minAbsDiff, *curr - *prev);
+                    prev = curr;
+                    curr++;
+                }
+                
+                result[i][j] = minAbsDiff;
+            }
+        }
+        
+        return result;
+    }
+};
+
+
+// Leetcode 3643 -- Flip Square Submatrix Vertically | Leetcode 3643
+class Solution {
+public:
+    vector<vector<int>> reverseSubmatrix(vector<vector<int>>& grid, int x, int y, int k) {
+     int startRow = x;
+     int endRow = x+k-1;
+     int startCol = y;
+     int endCol = y+k-1;
+
+     for(int i =startRow; i<=endRow; i++){
+        for(int j= startCol; j<= endCol; j++){
+            swap(grid[i][j], grid[endRow][j]);
+        }
+        endRow--;
+     }   
+     return grid;
+    }
+};
+
+
+
+
+// Leetcode 1886 -- Determine Whether Matrix Can Be Obtained By Rotation | Leetcode 1886
+//Approach (Rotate and check till 4 rotations)
+//T.C : O(n^2)
+//S.C : O(1)
+class Solution {
+public:
+    int n;
+
+    void rotate(vector<vector<int>>& mat) {
+        //Transpose
+
+        for(int i = 0; i < n; i++) {
+            for(int j = i; j < n; j++) {
+                swap(mat[i][j], mat[j][i]);
+            }
+        }
+
+        //Reverse each row
+        for(int i = 0; i < n; i++) {
+            reverse(mat[i].begin(), mat[i].end());
+        }
+    }
+
+    bool findRotation(vector<vector<int>>& mat, vector<vector<int>>& target) {
+        n = mat.size();
+
+        for(int c = 1; c <= 4; c++) {
+            
+            bool equal = true;
+            for(int i = 0; i < n; i++) {
+                for(int j = 0; j < n; j++) {
+                    if(mat[i][j] != target[i][j]) {
+                        equal = false;
+                        break;
+                    }
+                }
+                if(!equal)
+                    break;
+            }
+
+            if(equal)
+                return true;
+                
+            rotate(mat);
+        }
+
+        return false;
+    }
+};
+
+
+
+// Leetcode 1594 -- Maximum Non-Negative Product in a Matrix | Leetcode 1594
+//Approach - 1 (Recursion + Memoization)
+//T.C : O(m*n)
+//S.C : O(m*n)
+class Solution {
+public:
+    int m, n;
+    typedef long long ll;
+    int MOD = 1e9+7;
+
+    vector<vector<pair<ll, ll>>> t;
+    
+    pair<ll, ll> solve(int i, int j, vector<vector<int>>& grid) {
+        if(i == m-1 && j == n-1) {
+            return {grid[i][j], grid[i][j]};
+        }
+
+        ll maxVal = LLONG_MIN;
+        ll minVal = LLONG_MAX;
+
+        if(t[i][j] != make_pair(LLONG_MIN, LLONG_MAX)) {
+            return t[i][j];
+        }
+
+        //Down
+        if(i+1 < m) {
+            auto [downMax, downMin] = solve(i+1, j, grid);
+            maxVal = max({maxVal, grid[i][j] * downMax, grid[i][j] * downMin});
+            minVal = min({minVal, grid[i][j] * downMax, grid[i][j] * downMin});
+        }
+
+
+        //Right
+        if(j+1 < n) {
+            auto [rightMax, rightMin] = solve(i, j+1, grid);
+            maxVal = max({maxVal, grid[i][j] * rightMax, grid[i][j] * rightMin});
+            minVal = min({minVal, grid[i][j] * rightMax, grid[i][j] * rightMin});
+        }
+
+        return t[i][j] = {maxVal, minVal};
+    }
+    int maxProductPath(vector<vector<int>>& grid) {
+        m = grid.size();
+        n = grid[0].size();
+        
+        t = vector<vector<pair<ll, ll>>>(m, vector<pair<ll, ll>>(n, {LLONG_MIN, LLONG_MAX}));
+        auto [maxProd, minProd] = solve(0, 0, grid);
+
+        return maxProd < 0 ? -1 : maxProd % MOD;
+    }
+};
+
+
+//Approach - 2 (Bottom Up)
+//T.C : O(m*n)
+//S.C : O(m*n)
+class Solution {
+public:
+    typedef long long ll;
+    int MOD = 1e9+7;
+
+    int maxProductPath(vector<vector<int>>& grid) {
+        int m = grid.size();
+        int n = grid[0].size();
+        
+
+        //bottom up dp lena padega
+        vector<vector<pair<ll, ll>>> t(m, vector<pair<ll, ll>>(n));
+        //t[i][j] = {maxVal, minVal} to reach from (0, 0) to (i, j)
+
+        t[0][0] = {grid[0][0], grid[0][0]};
+
+        //filling the first row
+        for(int j = 1; j < n; j++) {
+            t[0][j].first  = t[0][j-1].first  * grid[0][j]; //maxVal
+            t[0][j].second = t[0][j-1].second * grid[0][j]; //minVal
+        }
+
+        //filling the first column
+        for(int i = 1; i < m; i++) {
+            t[i][0].first  = t[i-1][0].first  * grid[i][0]; //max Val
+            t[i][0].second = t[i-1][0].second * grid[i][0]; //min val
+        }
+
+        for(int i = 1; i < m; i++) {
+            for(int j = 1; j < n; j++) {
+                ll upMax = t[i-1][j].first;
+                ll upMin = t[i-1][j].second;
+
+                ll leftMax = t[i][j-1].first;
+                ll leftMin = t[i][j-1].second;
+
+                t[i][j].first  = max({upMax * grid[i][j], upMin * grid[i][j], leftMax * grid[i][j], leftMin * grid[i][j]});
+                t[i][j].second = min({upMax * grid[i][j], upMin * grid[i][j], leftMax * grid[i][j], leftMin * grid[i][j]});
+            }
+        }
+
+        auto [maxProd, minProd] = t[m-1][n-1];
+
+        return maxProd < 0 ? -1 : maxProd % MOD;
+    }
+};
+
+ 
+
+// Leetcode 3548 -- Equal Sum Grid Partition II
+//Approach (Using prefix sum)
+//T.C : O(m*n)
+//S.C : O(m+n)
+class Solution {
+public:
+    typedef long long ll;
+    ll total = 0;
+
+    bool checkHorCuts(vector<vector<int>>& grid) {
+        int m = grid.size();
+        int n = grid[0].size();
+
+        unordered_set<ll> st;
+        ll top = 0;
+
+        for(int i = 0; i <= m-2; i++) {
+
+            for(int j = 0; j < n; j++) {
+                st.insert(grid[i][j]);
+                top += grid[i][j];
+            }
+
+            ll bottom = (total - top);
+            ll diff = top - bottom;
+
+            if (diff == 0) return true;
+
+            if (diff == (ll)grid[0][0])   return true;
+            if (diff == (ll)grid[0][n-1]) return true;
+            if (diff == (ll)grid[i][0]) return true;
+
+            if(i > 0 && n > 1 && st.count(diff)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    bool canPartitionGrid(vector<vector<int>>& grid) {
+        int m = grid.size();
+        int n = grid[0].size();
+
+        for(int i = 0; i < m; i++) {
+            for(int j = 0; j < n; j++) {
+                total += grid[i][j];
+            }
+        }
+
+        //Horizontal cuts
+        if(checkHorCuts(grid)) {
+            return true;
+        }
+
+        reverse(begin(grid), end(grid));
+
+        if(checkHorCuts(grid)) {
+            return true;
+        }
+
+        reverse(begin(grid), end(grid)); //original grid  m*n
+
+        //Vertical cuts checking but by using checkHorCuts method
+        //Transpose of grid and then do checkHorCuts
+        vector<vector<int>> transposeGrid(n, vector<int>(m)); //n*m
+
+        for(int i = 0; i < m; i++) {
+            for(int j = 0; j < n; j++) {
+                transposeGrid[j][i] = grid[i][j];
+            }
+        }
+
+        if(checkHorCuts(transposeGrid)) {
+            return true;
+        }
+
+        reverse(begin(transposeGrid), end(transposeGrid));
+
+        if(checkHorCuts(transposeGrid)) {
+            return true;
+        }
+
+        return false;
+
+    }
+};
+
+
+
+// Leetcode 2946 -- Matrix Similarity After Cyclic Shifts | 2 Simple Approaches
+//Approach-1 (Simulation + extra space)
+//T.C : O(m*n)
+//S.C : O(m*n)
+class Solution {
+public:
+    bool areSimilar(vector<vector<int>>& mat, int k) {
+        vector<vector<int>> temp = mat;
+        int m = mat.size();
+        int n = mat[0].size();
+        k = k%n;
+        if(k == 0) { //no shifting
+            return true;
+        }
+      
+        for(int i = 0; i<m; i++) {
+            if(i%2) { // odd
+                rotate(rbegin(mat[i]), rbegin(mat[i]) + k, rend(mat[i]));
+            } else {
+                rotate(begin(mat[i]), begin(mat[i]) + k, end(mat[i]));
+            }
+        }
+
+        return temp == mat;
+    }
+};
+
+
+//Approach-2 (Without rotation and O(1) space)
+//T.C : O(m*n)
+//S.C : O(1)
+class Solution {
+public:
+    bool areSimilar(vector<vector<int>>& mat, int k) {
+        int m = mat.size();
+        int n = mat[0].size();
+
+        k = (k%n);
+
+        if(k == 0) { //no shifting
+            return true;
+        }
+
+        for(int i = 0; i < m; i++) {
+            for(int j = 0; j < n; j++) {
+
+                int currIdx = j;
+                int finalIdx;
+
+                if(i % 2 == 0) { //even : left shift
+                    finalIdx = (j + k)%n;
+                } else {
+                    finalIdx = (j - k + n) % n;
+                }
+
+                if(mat[i][currIdx] != mat[i][finalIdx]) {
+                    return false;
+                }
+
+            }
+        }
+
+        return true;
+    }
+};
+
+
+
+
+// Leetcode 2573 -- Find the String with LCP Matrix | Leetcode 2573
+//Approach-1 (Using Greedy Allocation + Finding LCP and comparing)
+//T.C : O(n^2)
+//S.C : O(n^2)
+class Solution {
+    vector<vector<int>> LongestCommonPrefixMatrix (string s) {
+        int n = s.length();
+        vector<vector<int>> result(n, vector<int>(n, 0));
+        
+        for (int j = 0; j < n; j ++) {
+            result[n-1][j] = result[j][n-1] = (s[j] == s[n-1])? 1 : 0; 
+        }
+        for (int i = n-2; i >= 0; i --) {
+            for (int j = n-2; j >= 0; j --) {
+                result[i][j] = (s[i] == s[j])? 1 + result[i+1][j+1] : 0;
+            }
+        }
+        
+        return result;
+    }
+    
+public:
+    string findTheString(vector<vector<int>>& lcp) {
+        int n = lcp.size();
+        
+        string result (n, 'a');
+        
+        for (int i = 1; i < n; i ++) {
+            vector<bool> not_equal(26, false);
+            bool matched = false;
+            
+            for (int j = 0; j < i; j ++) {
+                if (lcp[j][i] == 0) {
+                    not_equal[result[j] - 'a'] = true;
+                    continue;
+                }
+                
+                matched = true;
+                result[i] = result[j];
+                break;
+            }
+        
+            if (matched) continue;
+            for (int j = 0; j < 26; j ++) {
+                if (not_equal[j]) continue;
+                
+                result[i] = (char)('a' + j);
+                break;
+            }
+        }
+        
+        if (LongestCommonPrefixMatrix(result) == lcp) return result;
+        return "";
+    }
+};
+
+
+
+//Approach-2 (Using Greedy Allocation + Without finding LCP)
+//T.C : O(n^2)
+//S.C : O(n) for word
+class Solution {
+public:
+    bool checkLCP(string &word, vector<vector<int>>& lcp) {
+        int n = word.length();
+
+        for(int i = 0; i < n; i++) {
+            //lcp[i][n-1] = (word[i] == word[n-1]) ? 1 : 0;
+            if(word[i] != word[n-1]) {
+                if(lcp[i][n-1] != 0) return false;
+            } else {
+                if(lcp[i][n-1] != 1) return false;
+            }
+        }
+
+        for(int j = 0; j < n; j++) {
+            //lcp[n-1][j] = (word[n-1] == word[j]) ? 1 : 0;
+            if(word[n-1] != word[j]) {
+                if(lcp[n-1][j] != 0) return false;
+            } else {
+                if(lcp[n-1][j] != 1) return false;
+            }
+        }
+
+        for(int i = n-2; i >= 0; i--) {
+            for(int j = n-2; j >= 0; j--) {
+                if(word[i] == word[j]) {
+                    if(lcp[i][j] != 1 + lcp[i+1][j+1]) return false;
+                } else {
+                    if(lcp[i][j] != 0) return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    string findTheString(vector<vector<int>>& lcp) {
+        int n = lcp.size();
+
+        string word(n, '$');
+
+        for(int i = 0; i < n; i++) {
+
+            //word[i] = ?
+            for(int j = 0; j < i; j++) {
+                if(lcp[j][i] != 0) {
+                    word[i] = word[j];
+                    break;
+                }
+            }
+
+
+            if(word[i] == '$') {
+                vector<bool> forbidden(26, false);
+
+                for(int j = 0; j < i; j++) {
+                    if(lcp[j][i] == 0) {
+                        forbidden[word[j] - 'a'] = true;
+                    }
+                }
+
+                //a, b, c ..., z
+                for(int idx = 0; idx < 26; idx++) {
+                    if(forbidden[idx] == false) {
+                        word[i] = idx + 'a';
+                        break;
+                    }
+                }
+
+                if(word[i] == '$')
+                    return ""; //we could never fill word[i]
+            }
+        }
+
+        return checkLCP(word, lcp) == true ? word : "";
+    }
+};
+
+
+
+// Leetcode 2839 -- Check if Strings Can be Made Equal With Operations I
+//Approach-1 (Constant time check of 0,2 and 1,3 indices)
+//T.C : O(1)
+//S.C : O(1)
+class Solution {
+public:
+    bool canBeEqual(string s1, string s2) {
+        //index 0 and 2
+        bool condition1 = (s1[0] == s2[0] && s1[2] == s2[2]) || (s1[0] == s2[2] && s1[2] == s2[0]);
+
+
+        //index 1 and 3
+        bool condition2 = (s1[1] == s2[1] && s1[3] == s2[3]) || (s1[1] == s2[3] && s1[3] == s2[1]);
+
+        return condition1 && condition2;
+    }
+};
+
+
+
+//Approach-2 - Using map for grouping even and odd indices
+//T.C : O(n)
+//S.C : O(1)
+class Solution {
+public:
+    bool canBeEqual(string s1, string s2) {
+        int even[26] = {0};
+        int odd[26] = {0};
+
+        int n = s1.length();
+
+        for(int i = 0; i < 4; i++) {
+            if(i%2 == 0) { //even indices
+                even[s1[i] - 'a']++;
+                even[s2[i] - 'a']--;
+            } else { //odd indices
+                odd[s1[i] - 'a']++;
+                odd[s2[i] - 'a']--;
+            }
+        }
+
+        for(int i = 0; i < 26; i++) {
+            if(even[i] != 0 || odd[i] != 0)
+                return false;
+        }
+
+        return true;
+    }
+};
+
+
+// Leetcode 2840. Check if Strings Can be Made Equal With Operations II
+//Approach - Using map for grouping even and odd indices
+//T.C : O(n)
+//S.C : O(1)
+class Solution {
+public:
+    bool checkStrings(string s1, string s2) {
+        int even[26] = {0};
+        int odd[26] = {0};
+
+        int n = s1.length();
+
+        for(int i = 0; i < n; i++) {
+            if(i%2 == 0) { //even indices
+                even[s1[i] - 'a']++;
+                even[s2[i] - 'a']--;
+            } else { //odd indices
+                odd[s1[i] - 'a']++;
+                odd[s2[i] - 'a']--;
+            }
+        }
+
+        for(int i = 0; i < 26; i++) {
+            if(even[i] != 0 || odd[i] != 0)
+                return false;
+        }
+
+        return true;
+    }
+};
+
+
+
+//Leetcoe 3418 -- Maximum Amount of Money Robot Can Earn
+//Approach (Recursion + Memoization)
+//T.C : O(m*n)
+//S.C : O(m*n)
+class Solution {
+public:
+    int m;
+    int n;
+    int t[501][501][3];
+
+    int solve(vector<vector<int>>& coins, int i, int j, int neu) {
+        if(i == m-1 && j == n-1) {
+            if(coins[i][j] < 0 && neu > 0) {
+                return 0; //neutralize kardiya robber ko
+            }
+
+            return coins[i][j];
+        }
+
+        if(i >= m || j >= n) {
+            return INT_MIN;
+        }
+
+        if(t[i][j][neu] != INT_MIN) {
+            return t[i][j][neu];
+        }
+
+        //Take the current cell value
+        int take = coins[i][j] + max(solve(coins, i+1, j, neu), solve(coins, i, j+1, neu));
+
+        //Skip current value if you can
+        int skip = INT_MIN;
+        if(coins[i][j] < 0 && neu > 0) {
+            int skipDown = solve(coins, i+1, j, neu-1);
+            int skipRight = solve(coins, i, j+1, neu-1);
+
+            skip = max(skipDown, skipRight);
+        }
+
+        return t[i][j][neu] = max(take, skip);
+    }
+
+    int maximumAmount(vector<vector<int>>& coins) {
+
+        m = coins.size();
+        n = coins[0].size();
+
+        for(int i = 0; i < 501; i++) {
+            for(int j = 0; j < 501; j++) {
+                for(int k = 0; k < 3; k++) {
+                    t[i][j][k] = INT_MIN;
+                }
+            }
+        }
+
+        return solve(coins, 0, 0, 2);
+    }
+};
+
+
+
+// Leetcode 3661 -- Maximum Walls Destroyed by Robots | Detailed  
+//Approach (Recursion + Memoization + Binary Search)
+//T.C : O(n * log(w) + nlogn + wlogw), n = robots.size(), w = walls.size()
+//S.C : O(n)
+class Solution {
+public:
+    typedef pair<int, int> P;
+    vector<vector<int>> t;
+
+    int countWalls(vector<int>& walls, int l, int r) {
+        int left  = lower_bound(begin(walls), end(walls), l) - begin(walls);
+        int right = upper_bound(begin(walls), end(walls), r) - begin(walls);
+
+        return right - left;
+
+    }
+
+    int solve(vector<int>& walls, vector<P>& roboDist, vector<P>& range, int i, int prevDir) {
+
+        if(i == roboDist.size())
+            return 0;
+        
+        if(t[i][prevDir] != -1)
+            return t[i][prevDir];
+
+        int leftStart = range[i].first;
+
+        if(prevDir == 1) { //prev robot fired bullet rtowards right
+            leftStart = max(leftStart, range[i-1].second + 1);
+        }
+
+        int leftTake = countWalls(walls, leftStart, roboDist[i].first) 
+                        + solve(walls, roboDist, range, i+1, 0);
+                    
+        int rightTake = countWalls(walls, roboDist[i].first, range[i].second) 
+                        + solve(walls, roboDist, range, i+1, 1);
+
+        
+        return t[i][prevDir] = max(leftTake, rightTake);
+    }
+
+    int maxWalls(vector<int>& robots, vector<int>& distance, vector<int>& walls) {
+        int n = robots.size();
+
+        vector<P> roboDist(n);
+        for (int i = 0; i < n; i++) {
+            roboDist[i] = {robots[i], distance[i]};
+        }
+
+        sort(begin(roboDist), end(roboDist));
+        sort(begin(walls), end(walls));
+
+        //Prepare range vector for each robot
+        vector<P> range(n);
+
+        for(int i = 0; i < n; i++) {
+            int pos = roboDist[i].first;
+            int d   = roboDist[i].second;
+
+            int leftLimit  = (i == 0)   ? 1   : roboDist[i-1].first+1;
+            int rightLimit = (i == n-1) ? 1e9 : roboDist[i+1].first-1;
+
+            int L = max(pos - d, leftLimit);
+            int R = min(pos + d, rightLimit);
+
+            range[i] = {L, R};
+        }
+
+        t.assign(n+1, vector<int>(2, -1));
+
+        //prev = 0/1 (previious robot hit buttlet to left/right)
+        return solve(walls, roboDist, range, 0, 0);
+    }
+};
+
+
+
+
+// Leetcode 657-- Robot Return to Origin
+class Solution {
+public:
+    bool judgeCircle(string moves) {
+        int x = 0;
+        int y = 0;
+
+        for(char &ch : moves) {
+            if(ch == 'U')       y++;
+            else if(ch == 'D')  y--;
+            else if(ch == 'L')  x--;
+            else if(ch == 'R')  x++;
+        }
+
+        return x == 0 && y == 0;
+    }
+};
+
+
+
+
+//Leetcode 874. Walking Robot Simulation
+//Simple Simulation
+//T.C : O(m + n * maxValCommand), m = size of obstacles, n = size of commands
+//S.C : O(m)
+class Solution {
+public:
+    int robotSim(vector<int>& commands, vector<vector<int>>& obstacles) {
+        unordered_set<string> st;
+        for(vector<int>& obs : obstacles) {
+            string key = to_string(obs[0]) + "_" + to_string(obs[1]);
+            st.insert(key);
+        }
+
+        int x = 0;
+        int y = 0;
+        int maxD = 0;
+
+        //Pointing to North
+        pair<int, int> dir = {0, 1}; //N
+
+        for(int i = 0; i < commands.size(); i++) {
+            if(commands[i] == -2) { //left 90 degree
+                dir = {-dir.second, dir.first};
+            } else if(commands[i] == -1) { //right 90 degree
+                dir = {dir.second, -dir.first};
+            } else { //move to the direction step by step
+                for(int step = 0; step < commands[i]; step++) {
+                    int newX = x + dir.first;
+                    int newY = y + dir.second;
+
+                    string nextKey = to_string(newX) + "_" + to_string(newY);
+
+                    if(st.find(nextKey) != st.end()) {
+                        break;
+                    }
+
+                    x = newX;
+                    y = newY;
+                }
+            }
+
+            maxD = max(maxD, x*x + y*y);
+        }
+
+        return maxD;
+    }
+};
+
+
+
+
+// Leetcode 3655 -- XOR After Range Multiplication Queries II
+//Approach - Using Square Root Decomposition, Difference Array Technique with Jumps + Fermat's Little Theorem + Binary Exponentiation
+//T.C : O((N + Q)√N) due to splitting queries by step size,
+//S.C : O(N + Q) for storing diff arrays and grouped queries.
+class Solution {
+public:
+    int M = 1e9+7;
+    //Binary Exponentiation for Fermat's Little Theorem - > Pow(v ,M-2)
+    long long power(long long a, long long b) {
+        if(b == 0)
+            return 1;
+
+        long long half   = power(a, b/2);
+        long long result = (half * half) % M;
+
+        if(b % 2 == 1) {
+            result = (result * a) % M;
+        }
+
+        return result;
+    }
+
+    int xorAfterQueries(vector<int>& nums, vector<vector<int>>& queries) {
+        int n = nums.size(); 
+        int blockSize = ceil(sqrt(n));
+
+        unordered_map<int, vector<vector<int>>> smallKMap;
+
+        for(auto &query : queries) {
+            int L = query[0];
+            int R = query[1];
+            int K = query[2];
+            int V = query[3];
+
+            if(K >= blockSize) {
+                for(int i = L; i<= R; i+=K) {
+                    nums[i] = (1LL * nums[i] * V) % M;
+                }
+            } else { //K < blockSize
+                smallKMap[K].push_back(query);
+            }
+        }
+
+        for(auto& [K, allQueries] : smallKMap) {
+            vector<long long> diff(n, 1);
+
+            for(auto& query : allQueries) {
+                int L = query[0];
+                int R = query[1];
+                int V = query[3];
+
+                diff[L] = (diff[L] * V) % M;
+
+                int steps = (R - L)/K;
+                int next  = L + (steps+1)*K;
+
+                if(next < n)
+                    diff[next] = (diff[next] * power(V, M-2)) % M;
+            }
+
+            //Cumulative product
+            for(int i = 0; i < n; i++) {
+                if(i-K >= 0)
+                    diff[i] = (diff[i] * diff[i-K]) % M;
+            }
+
+            //Apply diff to nums
+            for(int i = 0; i < n; i++) {
+                nums[i] = (1LL * nums[i] * diff[i]) % M;
+            }
+        }
+
+        int result = 0;
+        for(int &num : nums) {
+            result = (result ^ num);
+        }
+
+        return result;
+    }
+};
+
+
+
+// Leetcode 3741 and 3740 -- Minimum Distance Between Three Equal Elements I and II | 
+class Solution {
+public:
+    int minimumDistance(vector<int>& nums) {
+        int n = nums.size();
+
+        unordered_map<int, vector<int>> mp;
+        int result = INT_MAX;
+
+        for(int k = 0; k < n; k++) {
+            mp[nums[k]].push_back(k);
+
+            if(mp[nums[k]].size() >= 3) {
+                vector<int> &vec = mp[nums[k]];
+                int siz = vec.size();
+
+                int i = vec[siz-3];
+                result = min(result, k-i);
+            }
+        }
+
+        return result >= INT_MAX ? -1 : 2*result;
+    }
+};
+
+
+// Leetcode 1848 --Minimum Distance to the Target Element
+//Approach-1 (Simple simulation)
+//T.C : O(n)
+//S.C : O(1)
+class Solution {
+public:
+    int getMinDistance(vector<int>& nums, int target, int start) {
+        int n = nums.size();
+
+        int result = INT_MAX;
+
+        //result = x;
+        //abs(start - i) minimal
+
+        for(int i = 0; i < n; i++) {
+
+            if(nums[i] == target) {
+                result = min(result, abs(i - start));
+            }
+
+        }
+
+        return result;
+    }
+};
+
+//Approach-2 (Loop with Early Break)
+//T.C : O(n)
+//S.C : O(1)
+class Solution {
+public:
+    int getMinDistance(vector<int>& nums, int target, int start) {
+        int n = nums.size();
+
+        int result = INT_MAX;
+
+        //result = x;
+        //abs(start - i) minimal
+
+        for(int i = 0; i < n && result > abs(i - start); i++) {
+
+            if(nums[i] == target) {
+                result = min(result, abs(i - start));
+            }
+
+        }
+
+        return result;
+    }
+};
+
+
+
+// Minimum Total Distance Traveled | Detailed Thought Process | Leetcode 2463
+//Approach-1 (Recursion + Memoization)
+//T.C : O(m*n)
+//S.C : O(m*n)
+class Solution {
+public:
+    typedef long long ll;
+
+    ll solve(int ri, int fi, vector<int>& robot, vector<int>& positions, vector<vector<ll>>& t) {
+        if(ri >= robot.size()) {
+            return 0; //no more distance to be covered
+        }
+
+        if(fi >= positions.size()) {
+            return 1e12;
+        }
+
+        if(t[ri][fi] != -1) {
+            return t[ri][fi];
+        }
+
+        ll take_current_factory = abs(robot[ri] - positions[fi]) + solve(ri+1, fi+1, robot, positions, t);
+        ll skip = solve(ri, fi+1, robot, positions, t);
+
+        return t[ri][fi] = min(take_current_factory, skip);
+    }
+
+    long long minimumTotalDistance(vector<int>& robot, vector<vector<int>>& factory) {
+        //Step-1
+        sort(begin(robot), end(robot));
+        sort(begin(factory), end(factory));
+
+        int m = robot.size();
+        
+        //Step-2 (Expand factory positions to avoid tracking of limit and easy recursion)
+        vector<int> positions;
+        for(int i = 0; i < factory.size(); i++) {
+            int limit = factory[i][1];
+            int pos   = factory[i][0];
+
+            for(int j = 0; j < limit; j++) {
+                positions.push_back(pos);
+            }
+        }
+        int n = positions.size();
+        vector<vector<ll>> t(m+1, vector<ll>(n+1, -1));
+
+        //step-3 (solve)
+        return solve(0, 0, robot, positions, t);
+
+    }
+};
+
+
+// Shortest Distance to Target String in a Circular Array | Circular Trick | Leetcode 2515
+//Approach (Simple simulation)
+//T.C : O(n*L), L = average length of all the words
+//S.C : O(1)
+class Solution {
+public:
+    int closestTarget(vector<string>& words, string target, int startIndex) {
+        int n      = words.size();
+        int result = INT_MAX;
+
+        for (int i = 0; i < n; ++i) {
+            if (words[i] == target) {
+                int straightDist  = abs(i - startIndex);
+                int circularDist  = n-straightDist;
+
+                result = min({result, straightDist, circularDist});
+            }
+        }
+
+        return result == INT_MAX ? -1 : result;
+    }
+};
+
+
+
+//Closest Equal Element Queries | Super Simplified | Dry Run | Leetcode 3488
+//Approach - Store in map and use binary search to find indices
+//T.C : O(Q * log(n))
+//S.C : O(n)
+class Solution {
+public:
+    vector<int> solveQueries(vector<int>& nums, vector<int>& queries) {
+        int n = nums.size();
+        
+        unordered_map<int, vector<int>> mp;
+
+        for(int i = 0; i < n; i++) {
+            mp[nums[i]].push_back(i);
+        }
+
+        vector<int> result;
+
+        for(int qi : queries) { //O(Q)
+            int element = nums[qi];
+            vector<int>& vec = mp[element];
+
+            int sz = vec.size();
+
+            //no more occurence of this element
+            if(sz == 1) {
+                result.push_back(-1);
+                continue;
+            }
+
+            int pos = lower_bound(begin(vec), end(vec), qi) - begin(vec); //log(n)
+            int res = INT_MAX;
+
+            //Right Neighbour - pos+1
+            int right = vec[(pos+1) % sz];
+            int d = abs(qi - right);//straught forqward distance
+            int circularDist = n-d;
+            res = min({res, d, circularDist});
+
+
+            //Left Neighbour - pos-1
+            int left = vec[(pos-1+sz) % sz];
+            d = abs(qi - left);//straught forqward distance
+            circularDist = n-d;
+            res = min({res, d, circularDist});
+
+            result.push_back(res);
+        }
+
+        return result;
+    }
+};
+
+
+
+
+
+//Minimum Absolute Distance Between Mirror Pairs | Simplest Explanation | Leetcode 3761
+//Approach - Store reverses in map - iterate and find
+//T.C : O(n * log(10(num)))
+//S.C : O(n)
+class Solution {
+public:
+    int getReverse(int n) {
+        int rev = 0;
+
+        while(n > 0) {
+            int rem = n%10;
+
+            rev = rev*10 + rem;
+
+            n /= 10;
+        }
+
+        return rev;
+    }
+    int minMirrorPairDistance(vector<int>& nums) {
+        int n = nums.size();
+
+        unordered_map<int, int> mp; //reversed -> idx
+
+        int result = INT_MAX;
+
+        for(int i = 0; i < n; i++) {
+            if(mp.count(nums[i])) {
+                result = min(result, i - mp[nums[i]]);
+            }
+
+            mp[getReverse(nums[i])] = i;
+        }
+
+        return result == INT_MAX ? -1 : result;
+    }
+};
+
+// 2452. Words Within Two Edits of Dictionary
+class Solution {
+public:
+    vector<string> twoEditWords(vector<string>& queries,
+                                vector<string>& dictionary) {
+        vector<string> result;
+
+        for (string& query : queries) {
+            
+            for (string& s : dictionary) {
+                int diff = 0;
+
+                for (int i = 0; i < query.size(); i++) {
+                    if (query[i] != s[i]) {
+                        ++diff;
+                    }
+
+                    if(diff > 2)
+                        break;
+                }
+
+                if (diff <= 2) {
+                    result.push_back(query);
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+};
+
+
+
+// 1559. Detect Cycles in 2D Grid
+//Approach-1 (Using DFS)
+//T.C : O(m*n)
+//S.C : O(m*n)
+class Solution {
+public:
+    int m, n;
+    vector<vector<int>> directions = {{1, 0}, {-1, 0}, {0, -1}, {0, 1}};
+
+    bool cycleDetectDFS(int r, int c, int prev_r, int prev_c, 
+                    vector<vector<char>>& grid, vector<vector<bool>>& visited ) {
+
+        if(visited[r][c]) {
+            return true;
+        }
+
+        visited[r][c] = true;
+
+        //explore neighbours
+        for(auto &dir : directions) {
+            int new_r = r + dir[0]; 
+            int new_c = c + dir[1];
+
+            if(new_r >= 0 && new_r < m && new_c >= 0 && new_c < n
+                && grid[new_r][new_c] == grid[r][c]) {
+                    if(new_r == prev_r && new_c == prev_c)
+                        continue;
+                    
+                    if(cycleDetectDFS(new_r, new_c, r, c, grid, visited)) {
+                        return true;
+                    }
+                }
+        }
+
+        return false;
+
+    }
+    bool containsCycle(vector<vector<char>>& grid) {
+        m = grid.size();
+        n = grid[0].size();
+
+        vector<vector<bool>> visited(m, vector<bool>(n, false));
+
+        for(int i = 0; i < m; i++) {
+            for(int j = 0; j < n; j++) {
+                if(!visited[i][j] && cycleDetectDFS(i, j, i, j, grid, visited)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+};
+
+
+
+//Approach-2 (Using BFS)
+//T.C : O(m*n)
+//S.C : O(m*n)
+class Solution {
+public:
+    int m, n;
+    vector<vector<int>> directions = {{1, 0}, {-1, 0}, {0, -1}, {0, 1}};
+
+    bool cycleDetectBFS(int r, int c, vector<vector<char>>& grid, vector<vector<bool>>& visited) {
+        //r, c, prev_r, prev_c
+        queue<tuple<int, int, int, int>> que;
+
+        que.push({r, c, -1, -1});
+        visited[r][c] = true;
+
+        while(!que.empty()) {
+            auto [curr_r, curr_c, prev_r, prev_c] = que.front();
+            que.pop();
+
+            //explore neighbours
+            for(auto &dir : directions) {
+                int new_r = curr_r + dir[0];
+                int new_c = curr_c + dir[1];
+
+                if(new_r >= 0 && new_r < m && new_c >= 0 && new_c < n
+                && grid[new_r][new_c] == grid[curr_r][curr_c]) {
+                    
+                    if(new_r == prev_r && new_c == prev_c)
+                        continue;
+                    
+                    if(visited[new_r][new_c])
+                        return true;
+                    
+                    visited[new_r][new_c] = true;
+
+                    que.push({new_r, new_c, curr_r, curr_c});
+                }
+
+            }
+        }
+
+        return false;
+    }
+
+    bool containsCycle(vector<vector<char>>& grid) {
+        m = grid.size();
+        n = grid[0].size();
+
+        vector<vector<bool>> visited(m, vector<bool>(n, false));
+
+        for(int i = 0; i < m; i++) {
+            for(int j = 0; j < n; j++) {
+                if(!visited[i][j] && cycleDetectBFS(i, j, grid, visited)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+};
+
+
+
+
+//Maximum Score From Grid Operations  | Leetcode 3225
+//Approach-1 (Brute Force) - TLE
+//T.C : O((n+1)^n * n^2))
+//S.C : O(n)
+class Solution {
+public:
+    long long computeScore(vector<int>& h, vector<vector<int>>& grid, int n) {
+        long long score = 0;
+
+        for (int j = 0; j < n; j++) {
+            for (int i = h[j] + 1; i < n; i++) {
+
+                bool hasBlackNeighbor = false;
+
+                if (j - 1 >= 0 && i <= h[j - 1])
+                    hasBlackNeighbor = true;
+
+                if (j + 1 < n && i <= h[j + 1])
+                    hasBlackNeighbor = true;
+
+                if (hasBlackNeighbor)
+                    score += grid[i][j];
+            }
+        }
+
+        return score;
+    }
+
+    void solve(int col, vector<int>& h, vector<vector<int>>& grid, int n, long long& result) {
+        if (col == n) {
+            result = max(result, computeScore(h, grid, n));
+            return;
+        }
+
+        // allow -1 (no operation)
+        for (int height = -1; height < n; height++) {
+            h[col] = height;
+            solve(col + 1, h, grid, n, result);
+        }
+    }
+
+    long long maximumScore(vector<vector<int>>& grid) {
+        int n = grid.size();
+
+        vector<int> h(n);
+        long long result = 0;
+
+        solve(0, h, grid, n, result);
+
+        return result;
+    }
+};
+
+
+
+
+//Approach-2 (Brute Force with improved computeScore)
+//T.C : O((n+1)^n * n))
+//S.C : O(n^2)
+class Solution {
+public:
+    using ll = long long;
+
+    ll computeScore(vector<int>& h, vector<vector<ll>>& colPrefSum, int n) {
+        ll score = 0;
+
+        for (int col = 0; col < n; col++) {
+
+            int left = (col - 1 >= 0 ? h[col - 1] : -1);
+            int right = (col + 1 < n ? h[col + 1] : -1);
+
+            int upper = max(left, right); // highest black neighbor
+            int lower = h[col];           // current column height
+
+            if (upper > lower) {
+                score += colPrefSum[upper + 1][col + 1]
+                       - colPrefSum[lower + 1][col + 1];
+            }
+        }
+
+        return score;
+    }
+
+    void solve(int col, vector<int>& h, vector<vector<ll>>& colPrefSum,
+               int n, ll& result) {
+
+        if (col == n) {
+            result = max(result, computeScore(h, colPrefSum, n));
+            return;
+        }
+
+        for (int height = -1; height < n; height++) {
+            h[col] = height;
+            solve(col + 1, h, colPrefSum, n, result);
+        }
+    }
+
+    long long maximumScore(vector<vector<int>>& grid) {
+        int n = grid.size();
+      
+        vector<vector<ll>> colPrefSum(n + 1, vector<ll>(n + 1, 0));
+
+        for (int col = 1; col <= n; col++) {
+            for (int row = 1; row <= n; row++) {
+                colPrefSum[row][col] =
+                    colPrefSum[row - 1][col] + grid[row - 1][col-1];
+            }
+        }
+
+        vector<int> h(n);
+        ll result = 0;
+
+        solve(0, h, colPrefSum, n, result);
+
+        return result;
+    }
+};
+
+
+
+//Approach-3 (Most optimal)
+//T.C : O(n^3)
+//S.C : O(n^2)
+class Solution {
+public:
+    typedef long long ll;
+    int n;
+    ll t[2][101][101];
+
+    ll solve(bool prevTaken, int prevHeight, int col, vector<vector<int>>& grid, vector<vector<ll>>& colPrefSum) {
+        
+        if(col == n) {
+            return 0;
+        }
+        
+        ll result = 0;
+
+        if(t[prevTaken][prevHeight][col] != -1) {
+            return t[prevTaken][prevHeight][col];
+        } 
+
+        for(int height = 0; height <= n; height++) {
+            ll prevColScore = 0;
+            ll currColScore = 0;
+
+            if(!prevTaken && col-1 >= 0 && height > prevHeight) {
+                prevColScore += colPrefSum[height][col] - colPrefSum[prevHeight][col];
+            }
+
+            if(prevHeight > height) {
+                currColScore += colPrefSum[prevHeight][col+1] - colPrefSum[height][col+1];
+            }
+
+
+            ll currColScoreTaken    = currColScore + prevColScore + solve(true, height, col+1, grid, colPrefSum);
+            ll currColScoreNotTaken = prevColScore + solve(false, height, col+1, grid, colPrefSum);
+
+            result = max({result, currColScoreTaken, currColScoreNotTaken});
+        }
+
+        return t[prevTaken][prevHeight][col] = result;
+
+    }
+
+    long long maximumScore(vector<vector<int>>& grid) {
+        n = grid.size();
+
+        memset(t, -1, sizeof(t));
+
+
+        vector<vector<ll>> colPrefSum(n + 1, vector<ll>(n + 1, 0));
+
+        for(int col = 1; col <= n; col++) {
+            for(int row = 1; row <= n; row++) {
+                colPrefSum[row][col] = colPrefSum[row-1][col] + grid[row-1][col-1];
+            }
+        }
+
+        return solve(false, 0, 0, grid, colPrefSum);
+    }
+};
+
+
+
+// Rotate String | Leetcode 796
+//Approach-1 (Brute Force Check all rotations)
+//T.C : O(n^2)
+//S.C : O(1)
+class Solution {
+public:
+    bool rotateString(string s, string goal) {
+        int m = s.length();
+        int n = goal.length();
+
+        if (m != n) 
+            return false;
+
+        // Try all possible rotations of the string
+        for (int rotationCount = 1; rotationCount <= m; ++rotationCount) {
+            // Perform one rotation
+            rotate(s.begin(), s.begin() + 1, s.end()); //it says that I want (s.begin()+1)th character to become the first character now. i.e. shifting left by one
+            if (s == goal) 
+                return true;
+        }
+        return false;
+    }
+};
+
+
+//Approach-2 (Concatenation with itself contains all possible rotations)
+//T.C : O(n)
+//S.C : O(1)
+class Solution {
+public:
+    bool rotateString(string s, string goal) {
+        int m = s.length();
+        int n = goal.length();
+        
+        if(m == n && (s+s).find(goal) != string::npos)
+            return true;
+        
+        return false;
+    }
+};
+
+
+//1 Jun
+//Leetcode 2144 -- Minimum Cost of Buying Candies With Discount
+class Solution {
+public:
+    int minimumCost(vector<int>& cost) {
+        int n = cost.size();
+        sort(begin(cost), end(cost), greater<int>());
+        int total = 0;
+        for(int i=0; i<n; i++){
+            if(i%3 !=2){
+                total += cost[i];
+            }
+        }
+        return total;
+    }
+};
+
+//3691. Maximum Total Subarray Value II
+class SegmentTree {
+public:
+    vector<int> segmentTree;
+    bool isMinTree;
+
+    SegmentTree(vector<int>& nums, bool flag) {
+        int n = nums.size();
+        this->isMinTree = flag;
+
+        segmentTree.resize(4 * n);
+
+        buildSegmentTree(0, 0, n - 1, nums);
+    }
+
+    void buildSegmentTree(int i, int l, int r, vector<int>& nums) {
+        if (l == r) {
+            segmentTree[i] = nums[l];
+            return;
+        }
+
+        int mid = l + (r - l) / 2;
+
+        buildSegmentTree(2 * i + 1, l, mid, nums);
+        buildSegmentTree(2 * i + 2, mid + 1, r, nums);
+
+        if (isMinTree) {
+            segmentTree[i] = min(segmentTree[2 * i + 1], segmentTree[2 * i + 2]);
+        } else {
+            segmentTree[i] = max(segmentTree[2 * i + 1], segmentTree[2 * i + 2]);
+        }
+    }
+
+    int querySegmentTree(int start, int end, int i, int l, int r) {
+        //No overlap
+        if (l > end || r < start) {
+            return isMinTree ? INT_MAX : INT_MIN;
+        }
+
+        //Complete Overlap
+        if (l >= start && r <= end) {
+            return segmentTree[i];
+        }
+
+        int mid = l + (r - l) / 2;
+
+        int a = querySegmentTree(start, end, 2 * i + 1, l, mid);
+        int b = querySegmentTree(start, end, 2 * i + 2, mid + 1, r);
+
+        if (isMinTree) {
+            return min(a, b);
+        }
+
+        return max(a, b);
+    }
+
+    int query(int l, int r, int n) {
+        return querySegmentTree(l, r, 0, 0, n - 1);
+    }
+};
+
+class Solution {
+public:
+    typedef long long ll;
+
+    ll getValue(int l, int r, SegmentTree& minST, SegmentTree& maxST, int n) {
+        int minEl = minST.query(l, r, n);
+        int maxEl = maxST.query(l, r, n);
+
+        return (ll)maxEl - minEl;
+    }
+
+    long long maxTotalValue(vector<int>& nums, int k) {
+        int n = nums.size();
+
+        SegmentTree minST(nums, true);   //true is for minimum
+        SegmentTree maxST(nums, false);  //false is for maximum
+
+        //{val, l, r} max. heap
+        priority_queue<tuple<ll, int, int>> pq;
+
+        //Step-1 (Initialize the heap with best value)
+        //O(n*logn)
+        for (int l = 0; l < n; l++) {  //l to n-1
+            ll value = getValue(l, n - 1, minST, maxST, n);  //log(n)
+            pq.push({value, l, n - 1});
+        }
+
+        //Step-2 Find top k
+        ll result = 0;
+        //O(k * log(n))
+        while (k--) {
+            auto [value, l, r] = pq.top();
+            pq.pop();
+
+            result += value;
+
+            ll nextBestValue = getValue(l, r - 1, minST, maxST, n);  //log(n)
+
+            pq.push({nextBestValue, l, r - 1});  //log(n)
+        }
+
+        return result;
+    }
+};
