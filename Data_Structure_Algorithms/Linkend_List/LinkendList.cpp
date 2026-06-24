@@ -234,7 +234,7 @@ int addHelper(Node* temp){
     return 1;
   }
   int carry = addHelper(temp->next);
-  temp->data += carry;
+  temp->data += carry;  
   if(temp->data < 10) return 0;
   temp->data = 0;
   return 1;
@@ -249,4 +249,187 @@ Node* addOne(Node* head){
   return head;
 }
 
-// L12. Find the intersection point of Y LinkedList
+//L12. Find the intersection point of Y LinkedList
+Node* getIntersectionNode(Node* headA, Node* headB){
+    map<Node*, int> mp;
+    Node* temp = headA;
+    while(temp != NULL){
+        mp[temp]++;
+        temp = temp->next;
+    }
+    temp = headB;
+    while(temp != NULL){
+        if(mp.find(temp) != mp.end()) return temp;
+        temp = temp->next;
+    }
+    return NULL;
+}
+TC -> O(N*M), SC -> O(N)
+
+//2nd way
+Node* CollisionPoint(Node* headA, Node* headB, int diff){
+    while(diff--){
+        headB = headB->next;
+    }
+    while(headA != NULL && headB != NULL){
+        if(headA == headB) return headA;
+        headA = headA->next;
+        headB = headB->next;
+    }
+    return NULL;
+}
+Node* getIntersectionNode(Node* headA, Node* headB){
+     Node* t1 = headA;
+     Node* t2 = headB;
+     int N1 = 0, N2 = 0;
+     while(t1 != NULL){
+         N1++;
+         t1 = t1->next;
+     }
+    while(t2 != NULL){
+        N2++;
+        t2 = t2->next;
+    }
+    
+    if(N1 < N2){
+        return CollisionPoint(headA, headB, N2-N1);
+    }else{
+        return CollisionPoint(headB, headA, N1-N2);
+    }
+}
+
+TC-> O(N1+ N2) SC -> O(1)
+
+//Optimal
+Node* getIntersectionNode(Node* headA, Node* headB){
+    if(headA == NULL || headB == NULL) return NULL;
+    Node* temp1 = headA;
+    Node* temp2 = headB;
+    while(temp1 != temp2){
+        temp1 = temp1->next;
+        temp2 = temp2->next;
+
+        if(temp1 == temp2) return temp1;
+        if(temp1 == NULL) temp1 = headB;
+        if(temp2 == NULL) temp2 = headA;
+    }
+    return temp1;
+}
+TC-> O(N1 + N2) SC -> O(1)
+
+
+//L13. Find the middle element of the LinkedList | Multiple Approaches
+Node* middleNode(Node* head){
+    Node* temp = head;
+    int count = 0;
+    while(temp != NULL){
+        count++;
+        temp = temp->next;
+    }
+    int middleNode = (count/2) + 1;
+    temp = head;
+    while(temp != NULL && middleNode > 1){
+        temp = temp->next;
+        middleNode--;
+    }
+    return temp;
+}
+TC -> O(N + N/2) SC -> O(1)
+
+//Optimal - Using Slow and Fast Pointers
+Node* middleNode(Node* head){
+    Node* slow = head;
+    Node* fast = head;
+    while(fast != NULL && fast->next != NULL){
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+    return slow;
+}
+TC -> O(N/2) SC -> O(1)
+
+//L14. Detect a loop or cycle in LinkedList | With proof and Intuition
+Node* detechLoop(Node* head){
+    map<Node*, int> mp;
+    Node* temp = head;
+    while(temp != NULL){
+        if(mp.find(temp) != mp.end()) return temp;
+        mp[temp]++;
+        temp = temp->next;
+    }
+    return NULL;
+}
+TC -> O(N) SC -> O(N)
+//Optimal - Tortoise and Hare Algorithm
+Node* detectLoop(Node* head){
+    Node* slow = head;
+    Node* fast = head;
+    while(fast != NULL && fast->next != NULL){
+        slow = slow->next;
+        fast = fast->next->next;
+        if(slow == fast) return true;
+    }
+    return false;
+}
+
+
+//L15. Find the length of the Loop in LinkedList
+Node* detectLengthofLoop(Node* head){
+ map<Node* int> mp;
+ Node* temp = head;
+ int timer = 1;
+ while(temp != NULL){
+  if(mp.find(temp) != mp.end()){
+    return timer - mp[temp];
+  }
+  mp[temp] = timer;
+  timer++;
+  temp = temp->next;
+ }
+ return 0;
+}
+TC -> O(N) SC -> O(N)
+//Optimal - Tortoise and Hare Algorithm
+int findLength(Node* slow, Node* fast){
+  int cnt = 1;
+  fast = fast->next;
+  while(slow != fast){
+    cnt++;
+    fast = fast->next;
+  }
+  return cnt;
+}
+int detectLengthofLoop(Node* head){
+  Node* slow = head;
+  Node* fast = head;
+  while(fast != NULL && fast->next != NULL){
+    slow = slow->next;
+    fast = fast->next->next;
+    if(slow == fast) return findLength(slow, fast);
+
+  }
+  return 0;
+}
+TC -> O(N) SC -> O(1)
+
+
+//L16. Delete the middle node of the LinkedList
+Node* deleteMiddle(Node* head){
+  if(head == NULL || head->next == NULL){
+    return NULL;
+  }
+  Node* slow = head;
+  Node* fast = head;
+  fast = fast->next->next;
+  while(fast != NULL && fast->next != NULL){
+    slow = slow->next;
+    fast = fast->next->next;
+  }
+  Node* delNode = slow->next;
+  slow->next = slow->next->next;
+  free(delNode);
+  return head;
+}
+TC -> O(N/2) SC -> O(1)
+
+//L17. Find the starting point of the Loop/Cycle in LinkedList | Multiple Approaches
