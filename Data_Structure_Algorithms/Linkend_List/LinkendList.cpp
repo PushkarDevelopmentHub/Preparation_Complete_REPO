@@ -140,3 +140,113 @@ Node* removeKthNode(Node* head, int k){
   delete delNode;
   return head;
 }
+TC-> O(length of LL) SC-> O(1)
+
+//L9. Reverse a LinkedList | Iterative and Recursive
+Node* reverseLL(Node* head){
+  if(head == NULL || head->next == NULL){
+    return head;
+  }
+  Node* prev = NULL;
+  Node* temp = head;
+  while(temp != NULL){
+    Node* front = temp->next;
+    temp->next = prev;
+    prev = temp;
+    temp = front;
+  }
+  return prev;
+}
+//recursive
+Node* reverseLLinRecursion(Node* head){
+  if(head == NULL || head->next == NULL){
+    return head;
+  }
+  Node* newHead = reverseLLinRecursion(head->next);
+  head->next->next = head;
+  head->next = NULL;
+  return newHead;
+}
+
+
+//L10. Check if a LinkedList is Palindrome or Not | Multiple Approaches
+Node* isPalindrome(Node* head){
+  stack<int> st;
+  Node* temp = head;
+  while(temp != NULL){
+    st.push(temp->data);
+    temp = temp->next;
+  }
+  temp = head;
+  while(temp != NULL){
+    if(temp->data != st.top()){
+      return false;
+    }
+    else{
+      st.pop();
+      temp = temp->next;
+    }
+  }
+  return true;
+}
+
+// Optimal Approach
+Node* revereseLinkendList(Node* head){
+  if(head == NULL || head->next == NULL){
+    return head;
+  }
+  Node* newHead = revereseLinkendList(head->next);
+  Node* front = head->next;
+  front->next = head;
+  head->next = NULL;
+  return newHead;
+}
+bool isPalindrome(Node* head){
+  if(head == NULL || head->next == NULL){
+    return true;
+  }
+  Node* slow = head;
+  Node* fast = head;
+  while(fast != NULL && fast->next != NULL){
+    slow = slow->next;
+    fast = fast->next->next;
+  }
+  Node* newHead = revereseLinkendList(slow->next);
+  Node* first = head;
+  Node* second = newHead;
+  while(second != NULL){
+    if(first->data != second->data){
+      reverseLinkendList(newHead);
+      return false;
+    }
+    first = first->next;
+    second = second->next;
+  }
+  reverseLinkendList(newHead);
+  return true;
+}
+//TC -> O(n) SC-> O(1)
+
+//L11. Add 1 to a number represented by LinkedList
+TC-> O(N) SC->O(N)
+int addHelper(Node* temp){
+  if(temp == NULL){
+    return 1;
+  }
+  int carry = addHelper(temp->next);
+  temp->data += carry;
+  if(temp->data < 10) return 0;
+  temp->data = 0;
+  return 1;
+}
+Node* addOne(Node* head){
+  int carry = addHelper(head);
+  if(carry == 1){
+    Node* newNode = new Node(1);
+    newNode->next = head;
+    head = newNode;
+  }
+  return head;
+}
+
+// L12. Find the intersection point of Y LinkedList
