@@ -433,3 +433,165 @@ Node* deleteMiddle(Node* head){
 TC -> O(N/2) SC -> O(1)
 
 //L17. Find the starting point of the Loop/Cycle in LinkedList | Multiple Approaches
+Node* StartingPointofLoop(Node* head){
+  map<Node*, int> mp;
+  Node* temp = head;
+  while(temp != NULL){
+    if(mp.find(temp) != mp.end()) return temp;
+    mp[temp]++;
+    temp = temp->next;
+  }
+  return NULL;
+}
+//TC -> O(N) SC -> O(N)
+//Optimal - Tortoise and Hare Algorithm
+Node* StartingPointofLoop(Node* head){
+  Node* slow = head;
+  Node* fast = head;
+  while(fast != NULL && fast->next != NULL){
+    slow = slow->next;
+    fast = fast->next->next;
+    if(slow == fast){
+       slow = head;
+       while(slow != fast){
+        slow = slow->next;
+        fast = fast->next;
+       }
+       return slow;
+    }
+  }
+  return NULL;
+}
+TC -> O(N) SC -> O(1)
+
+
+ 
+//L18. Delete all occurrences of a Key in DLL
+Node* deleteAllOccurences(Node* head, int key){
+    Node* temp = head;
+    while(temp != NULL){
+        if(temp->data == key){
+            if(temp == head){
+                head = head->next;
+            }
+            Node* nextNode = temp->next;
+            Node* prevNode = temp->prev;
+            if(nextNode != NULL){
+                nextNode->prev = prevNode;
+            }
+            if(prevNode != NULL){
+                prevNode->next = nextNode;
+            }
+            free(temp);
+            temp = nextNode;
+        }else{
+            temp = temp->next;
+        }
+    }
+    return head;
+}
+TC -> O(N) SC -> O(1)
+
+
+//L19. Find all Pairs with given sorted Sum in DLL
+vector<pair<int, int>> findPairsWithGivenSum(Node* head, int sum){
+    Node* temp1= head;
+    set<pair<int, int>> pairs;
+    while(temp1 != NULL){
+        Node* temp2 = temp1->next;
+        while(temp2 != NULL){
+            if(temp1->data + temp2->data == sum){
+                pairs.insert({temp1->data, temp2->data});
+            }
+            temp2 = temp2->next;
+        }
+        temp1 = temp1->next;
+    }
+    return pairs;
+}
+TC-> O(N^2) SC -> O(N)
+
+//2 pointer approach
+Node* findTail(Node* head){
+    Node* temp = head;
+    while(temp->next != NULL){
+        temp = temp->next;
+    }
+    return temp;
+}
+vector<pair<int, int>> findPairsWithGivenSum(Node* head, int sum){
+    vector<pair<int, int>> ans;
+    if(head == NULL) return ans;
+    Node* left = head;
+    Node* right = findTail(head);
+    while(temp->data < right->data){
+        if(temp->data + right->data == sum){
+            ans.push_back({temp->data, right->data});
+            left = left->next;
+            right= right->prev;
+        }else if(left->data + right->data < sum){
+            left = left->next;
+        }else{
+            right = right->prev;
+        }
+    }
+    return ans;
+}
+TC -> O(N) SC -> O(1)
+
+
+//L20. Remove duplicates from sorted DLL
+Node* removeDuplicates(Node* head){
+    if(head == NULL) return head;
+    Node* temp = head;
+    Node* nextNode = temp->next;
+    while(temp != NULL && temp->next != NULL){
+        while(nextNode != NULL && nextNode->data == temp->data){
+            Node* duplicate = nextNode;
+            nextNode = nextNode->next;
+            free(duplicate);
+        }
+        temp->next = nextNode;
+        if(nextNode != NULL){
+            nextNode->prev = temp;
+        }
+        temp = temp->next;
+    }
+    return head;
+}
+TC-> O(N) SC -> O(1)
+
+
+//L21. Reverse Nodes in K Group Size of LinkedList
+Node* findKthNode(Node* head, int k){
+    Node* temp = head;
+    while(temp != NULL && k > 1){
+        temp = temp->next;
+        k--;
+    }
+    return temp;
+}
+Node* reverseKGroup(Node* head, int k){
+    Node* temp = head;
+    Node* prevGroupTail = nullptr;
+    while(temp != NULL){
+    Node* kthNode = findKthNode(temp, k)
+    if(kthNode == NULL){
+        if(prevGroupTail){
+            prevGroupTail->next = temp;
+        }
+        break;
+    }
+    Node* nextGroupHead = kthNode->next;
+    kthNode->next = NULL;
+    reverseLinkedList(temp);
+    if(temp == head){
+        head = kthNode;
+    }else{
+        prevGroupTail->next = kthNode;
+    }
+    prevGroupTail = temp;
+    temp = nextGroupHead;
+    }
+    return head;
+}
