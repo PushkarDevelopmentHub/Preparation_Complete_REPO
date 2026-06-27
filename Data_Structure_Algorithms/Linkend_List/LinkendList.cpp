@@ -595,3 +595,67 @@ Node* reverseKGroup(Node* head, int k){
     }
     return head;
 }
+
+
+//L22. Rotate a LinkedList
+Node* findNthNode(Node* head, int k){
+  int cnt = 1;
+  while(head != NULL){
+    if(cnt == k) return head;
+    cnt++;
+    head = head->next;
+  }
+  return head;
+}
+Node* rotateRight(Node* head, int k){
+  if(head == NULL || head->next == NULL || k == 0){
+    return head;
+  }
+  Node* tail = head;
+  int len =1;
+  while(tail->next != NULL){
+    tail = tail->next;
+    len += 1;
+  }
+  if(k%len == 0) return head;
+
+  k = k%len;
+
+  tail->next= head;
+  Node* newLastNode = findNthNode(head, len-k);
+  head = newLastNode->next;
+  newLastNode->next = NULL;
+
+  return head;
+}
+TC -> O(2N) SC -> O(1)
+
+
+//L23. Merge two sorted Linked Lists
+Node* mergeTwoLists(Node* list1, Node* list2){
+  if(list1 == NULL) return list2;
+  if(list2 == NULL) return list1;
+  Node<int>* t1 = list1;
+  Node<int>* t2 = list2;
+  Node<int>* dummyNode = new Node<int>(-1);
+  Node<int>* temp = dummyNode;
+  while(t1 != NULL && t2 != NULL){
+    if(t1->data < t2->data){
+      temp->next = t1;
+      temp = t1;
+      t1 = t1->next;
+    }
+    else{
+      temp->next = t2;
+      temp = t2;
+      t2 = t2->next;
+    }
+  }
+  if(t1){
+    temp->next = t1;
+  }else{
+    temp->next = t2;
+  }
+
+  return dummyNode->next;
+}
