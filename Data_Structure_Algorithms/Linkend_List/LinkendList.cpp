@@ -659,3 +659,109 @@ Node* mergeTwoLists(Node* list1, Node* list2){
 
   return dummyNode->next;
 }
+
+
+//L24. Flattening a LinkedList | Multiple Approaches with Dry Run
+Node* convertArrayToLinkedListinVERTICAL(vector<int> arr){
+   if(arr.size() == 0) return NULL;
+  Node* head = new Node(arr[0]);
+  Node* temp = head;
+  for(int i=1; i<arr.size(); i++){
+    Node* newNode = new Node(arr[i]);
+    temp->child = newNode;
+    temp = temp->child;
+  }
+  return head;
+}
+Node* flattenLinkedList(Node* head){
+  Node* temp = head;
+  vector<int> arr;
+  while(temp != NULL){
+    Node* t2 = temp;
+    while(t2 != NULL){
+      arr.push_back(t2->data);
+      t2 = t2->child;
+    }
+    temp = temp->next;
+  }
+  sort(arr.begin(), arr.end());
+  head = convertArrayToLinkedListinVERTICAL(arr);
+  return head;
+}
+TC-> O(N*M) + O(xlogx) + O(x) SC-> O(n*m) where x is the total number of nodes in the linked list
+
+
+//2nd way
+Node* merge(Node* list1, Node* list2){
+  Node* dummyNode = new Node(-1);
+  Node* res = dummyNode;
+  while(list1 != NULL && list2 != NULL){
+    if(list1->data < list2->data){
+      res->child = list1;
+      res = list1;
+      list1= list1->child;
+    }else{
+      res->child = list2;
+      res = list2;
+      list2= list2->child;
+    }
+    res->next = NULL;
+  }
+  if(list1) res->child = list1;
+  else res->child = list2;
+  if(dummyNode->child) dummyNode->child->next = NULL;
+  returun dummyNode->child;
+}
+Node* flattenLinkedList(Node* head){
+  if(head == NULL || head->next == NULL){
+    return head;
+  }
+  Node* mergedHead = flattenLinkedList(head->next);
+  head = merge(head, mergedHead);
+
+  return head;
+}
+TC-> O(N*M) SC-> O(N) where N is the number of nodes in the linked list and M is the maximum number of child nodes in any node
+
+
+
+//L25. Merge K Sorted Lists | Multiple Approaches
+Node* mergeKLists(vector<Node*>& lists) {
+    vector<int> arr;
+    for(int i=0; i<lists.size(); i++){
+      Node* temp = lists[i];
+      while(temp != NULL){
+        arr.push_back(temp->data);
+        temp = temp->next;
+      }
+    }
+    sort(arr.begin(), arr.end());
+    Node* head = convertArrayToLinkedList(arr);
+    return head;
+}
+TC-> O(N*k) + Mlog M + M SC-> O(M)+ O(M)
+
+//2nd Way - Using Priority Queue
+Node* mergeKList(vector<Node*>& lists) {
+    priority_queue<pair<int, Node*>, vector<pair<int, Node*>>,
+    greater<pair<int, Node*>>> pq;
+    for(int i=0; i<lists.size(); i++){
+      if(lists[i]){
+        pq.push({lists[i]->data, lists[i]});
+      }
+    }
+    Node* dummyNode = new Node(-1);
+    Node* temp = dummyNode;
+    while(!pq.empty()){
+      auto it = pq.top();
+      pq.pop();
+      if(it.second->next){
+        pq.push({it.second->next->data, it.second->next});
+      }
+      temp->next = it.second;
+      temp = temp->next;
+    }
+    return dummyNode->next;
+}
+
+TC-> O(KlogK) + O(N*K*logK) SC= O(k)
