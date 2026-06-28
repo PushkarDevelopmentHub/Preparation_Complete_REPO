@@ -765,3 +765,110 @@ Node* mergeKList(vector<Node*>& lists) {
 }
 
 TC-> O(KlogK) + O(N*K*logK) SC= O(k)
+
+
+//L26. Sort a Linked List | Merge Sort and Brute Force
+Node* findMiddleforthisquestion(Node* head){
+  Node* slow = head;
+  Node* fast = head->next;
+  while(fast != NULL && fast->next != NULL){
+    slow = slow->next;
+    fast = fast->next->next;
+  }
+  return slow;
+}
+Node* sortaLinkedList(Node* head){
+  if(head == NULL || head->next == NULL){
+    return head;
+  }
+  Node* middle = findMiddleforthisquestion(head);
+  Node* rightHead = middle->next;
+  middle->next = NULL;
+  Node* left = head;
+
+  left = sortaLinkedList(left);
+  rightHead = sortaLinkedList(rightHead);
+  return mergeTwoLists(left, rightHead);
+}
+TC-> O(NlogN) SC-> O(1) for recursion stack
+
+
+//L27. Clone a LinkedList with Next and Random Pointers | Copy List with Random Pointers
+Node* CloneLinkedList(Node* head){
+  if(head == NULL) return NULL;
+  Node* temp = head;
+  map<Node*, Node*> mp;
+  while(temp != NULL){
+    Node* newNode = new Node(temp->data);
+    mp[temp] = newNode;
+    temp = temp->next;
+  }
+
+  temp = head;
+  while(temp != NULL){
+    Node* copyNode = mp[temp];
+    copyNode->next = mp[temp->next];
+    copyNode->random = mp[temp->random];
+    temp = temp->next;
+  }
+  return mp[head];
+}
+
+TC-> O(2N) SC-> O(N)
+
+//2nd way - Without using extra space
+1. Insert Copy Node in between the original nodes
+2. connect the random pointer of the copy node
+3. connect next poiner of the copy node and return the head of the copy linked list
+Node* CloneLinkedList(Node* head){
+  if(head == NULL) return NULL;
+  Node* temp = head;
+  while(temp != NULL){
+    Node* copyNode = new Node(temp->data);
+    copyNode->next = temp->next;
+    temp->next = copyNode;
+    temp = copyNode->next;
+  }
+
+  temp = head;
+  while(temp != NULL){
+    Node* copyNode = temp->next;
+    if(temp->random){
+      copyNode->random = temp->random->next;
+    }else{
+      copyNode->random = NULL;
+    }
+    temp = temp->next->next;
+  }
+
+  Node* dummyNode = new Node(-1);
+  Node* res = dummyNode;
+  temp = head;
+  while(temp != NULL){
+    res->next = temp->next;
+    res = res->next;
+    temp->next = temp->next->next;
+    temp = temp->next;
+  }
+}
+
+TC-> O(3N) SC-> O(N)
+
+
+//L28. Design a Browser History | LinkedList Implementation
+class Node{
+  public:
+  string data;
+  Node *next;
+  Node *back;
+  Node() : data[0], next(NULL), baack(NULL);
+  Node(string s): data(x), next(NULL), back(NULL);
+  Node(string s, Node* next, Node* random) : data(x), next(next), back(random);
+};
+
+Class Browser{
+  Node* currentPage;
+  public:
+  Broswer
+
+}
