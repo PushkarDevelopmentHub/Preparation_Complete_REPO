@@ -158,7 +158,57 @@ class MinStack {
     top(){
         st.top().first;
     }
-}
+};
+
+class MinStack{
+  private: 
+  stack<int> st;
+  int mini;
+  public:
+  MinStack(){
+    mini = INT_MAX;
+  }
+
+  void push(int value){
+    if(st.empty()){
+      mini = value;
+      st.push(value);
+      return;
+    }
+
+    if(value >mini){
+      st.push(value);
+
+    }else{
+      st.push(2* value - mini);
+      mini = value;
+    }
+
+  }
+
+  void pop(){
+    if(st.empty()) return;
+
+    int x = st.top();
+    st.pop();
+    if(x < mini){
+      mini = 2*mini - x;
+    }
+  }
+  int top(){
+    if(st.empty()) return -1;
+    int x = st.top();
+    if(mini < x) return x;
+
+    return mini;
+  }
+
+  int getMin(){
+    return mini;
+  }
+
+};
+
 TC-> O(1) SC-> O(N)
 
 
@@ -309,7 +359,7 @@ TC -> O(N) SC-> O(1)
 //L9. Sum of Subarray Minimum | Stack and Queue Playlist
 int sumSubarrayMinimum(vector<int>& arr){
   int n = arr.size();
-  vector<int> nextSmallerElement = findNextGreaterElements(arr);
+  vector<int> nextSmallerElement = findNextsmallerElements(arr);
   vector<int> previousSmallerElement = previousSamllestElement(arr);
 
   int totalSum = 0, mod= 1e9+ 7;
@@ -406,7 +456,7 @@ int largestRectangleArea(vector<int>& heights){
 
 TC -> O(5N) SC-> O(3N)
 
-
+// 
 int largestRectangleArea(vector<int& heights){
   stack<int> st;
   int maxArea = 0;
@@ -438,3 +488,108 @@ int largestRectangleArea(vector<int& heights){
 TC-> O(2N) SC-> O(N)
 
 
+//L13. Maximal Rectangle | Stack and Queue Playlist
+int maximalAreaOfSubMatrixOfAll1(vector<vector<int>> &matrix){
+    int n = matrix.size();
+    int m = matrix[0].size();
+    int maxArea = 0;
+    vector<int> prefixsum(m, 0);
+
+    for(int i=0; i<n; i++){
+        int sum = 0;
+        for(int j=0; j<m; j++){
+            sum += matrix[i][j];
+            if(matrix[i][j] == 0){
+                sum = 0;
+            }
+            prefixsum[j] = sum;
+        }
+    }
+    for(int i=0; i<n; i++){
+        maxArea = max(maxArea, largestRectangleArea(prefixsum));
+    }
+    return maxArea;
+}
+
+TC-> O(N*M) + O(N*2M) SC-> O(N*M) + O(N)
+
+
+// L14. Remove K Digits | Stack and Queue Playlist
+vector<int> removeKdigits(vector<int>& nums, int k) {
+    stack<int> st;
+    for(int i=0; i<nums.size(); i++){
+        while(!st.empty() && k>0 && (st.top() - '0') > (nums[i] - '0')){
+            st.pop();
+            k--;
+        }
+        st.push(nums[i]);
+    }
+
+    while(k>0) st.pop(), k--;
+    if(st.empty()) return {0};
+
+    vector<int> ans;
+    while(!st.empty()){
+        ans.push_back(st.top());
+        st.pop();
+    }
+    while(ans.size() != 0 && ans.back() == 0) {
+        ans.pop_back();
+    }
+    if(ans.empty()) return {0};
+    reverse(ans.begin(), ans.end());
+    return ans;
+}
+
+TC-> O(3N) + O(K) SC-> O(N)
+
+
+//L15. Stock Span Problem | Stack and Queue Playlist
+vector <int> stockSpan(vector<int> arr, int n){
+  stack<pair<int, int>> st;
+  vector<int> ans(n);
+
+  for(int i=0; i<n; i++){
+    while(!st.empty() && st.top().first <= arr[i]){
+      st.pop();
+    }
+    if(st.empty()){
+      ans[i] = i+1;
+    }else{
+      ans[i] = i - st.top().second;
+    }
+    st.push({arr[i], i});
+  }
+  return ans;
+}
+
+
+//L16. Sliding Window Maximum | Stack and Queue Playlist
+vector<int> slidingWindowMaximum(vector<int>& arr, int k){
+  int n = arr.size();
+  vector<int> ans;
+  deque<int> dq;
+
+  for(int i=0; i<n; i++){
+    while(!dq.empty() && dq.front() <= i-k){
+      dq.pop_front();
+    }
+    while(!dq.empty() && arr[dq.back()] < arr[i]){
+      dq.pop_back();
+    }
+    dq.push_back(i);
+    if(i >= k-1){
+      ans.push_back(arr[dq.front()]);
+    }
+  }
+  return ans;
+}
+
+TC-> O(2N) SC-> O(K) + O(N-K)
+
+
+
+//L17. The Celebrity Problem | Stack and Queue Playlist
+int celebrity(vector<vector<int>> &M){
+  
+}
