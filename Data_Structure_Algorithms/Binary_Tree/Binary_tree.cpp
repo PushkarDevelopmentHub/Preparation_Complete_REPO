@@ -260,3 +260,156 @@ TC-> O(N) SC-> O(H)
 
 
 // L21. Vertical Order Traversal of Binary Tree | C++ | Java
+vector<vector<int>> verticalTraversal(TreeNode* root){
+    map<int, map<int, multiset<int>>> nodes;
+    queue<pair<TreeNode*, pair<int, int>>> todo;
+    todo.push({root, {0, 0}});
+    while(!todo.empty()){
+        auto p = todo.front();
+        todo.pop();
+        TreeNode* node = p.first;
+        int x = p.second.first, y = p.second.second;
+        nodes[x][y].insert(node->val);
+
+        if(node->left){
+            todo.push({node->left, {x-1, y+1}});
+        }
+        if(node->right){
+            todo.push({node->right, {x+1, y+1}});
+        }
+    }
+    vector<vector<int>> ans;
+    for(auto p : nodes){
+        vector<int> col;
+        for(auto q : p.second){
+            col.insert(col.end(), q.second.begin(), q.second.end());
+        }
+        ans.push_back(col);
+    }
+    return ans;
+}
+
+TC-> O(N) SC-> O(N)
+
+
+
+//L22. Top View of Binary Tree | C++ | Java
+vector<int> topView(Node* root){
+    vector<int> ans;
+    if(root == nullptr) return ans;
+    map<int, int> mpp;
+    queue<pair<Node*, int>> q;
+    q.push({root, 0});
+
+    while(!q.empty()){
+        auto it = q.front();
+        q.pop();
+        Node* node = it.first;
+        int line = it.second;
+        if(mpp.find(line) == mpp.end()) mpp[line] = node->data;
+        if(node->left != NULL){
+            q.push({node->left, line -1});
+        }
+        if(node->right != nullptr){
+            q.push({node-> right, line +1});
+        }
+    }
+    for(auto it : mp){
+        ans.push_back(it.second);
+    }
+    return ans;
+}
+TC-> O(N) SC-> O(N)  
+
+
+//L23. Bottom View of Binary Tree | C++ | Java
+vector<int> bottomView(TreeNode* root){
+    vector<int> ans;
+    if(root ==NULL) return ans;
+    map<int, int> mpp;
+    queue<pair<Node* , int>> q;
+    q.push({root, 0});
+    while(!q.empty()){
+        auto it = q.front();
+        q.pop();
+        TreeNode* node = it.first();
+        int line = it.second;
+        mpp[line] = node->data;
+
+        if(node->left != NULL){
+            q.push({node->left, line -1});
+        }
+        if(node->right != nullptr){
+            q.push({node-> right, line +1});
+        }
+    }
+    for(auto it:mpp){
+        ans.push_back(it.second);
+    }
+    return ans;
+}
+
+
+//L24. Right/Left View of Binary Tree | C++ | Java
+vector<int> rightSideView(TreeNode* root){
+    vector<int> res;
+    recursion(root, 0, res);
+    return res;
+}
+void recursion(TreeNode* root, int level, vector<int> &res){
+    if(root == NULL) return;
+    if(res.size() == level) res.push_back(root->val);
+    recursion(root->right, level +1, res);
+    recursion(root->left, level +1, res);
+}
+
+//Left view
+vector<int> leftSideView(TreeNode* root){
+    vector<int> res;
+    recursion(root, 0, res);
+    return res;
+}
+void recursion(TreeNode* root, int level, vector<int> &res){
+    if(root == NULL) return;
+    if(res.size() == level) res.push_back(root->val);
+    recursion(root->left, level +1, res);
+    recursion(root->right, level +1, res);
+}
+
+TC-> O(N) SC-> O(N)
+
+
+//L25. Check for Symmetrical Binary Trees | C++ | Java
+bool isSymmetric(TreeNode *root){
+    return root == NULL || isSymmetricHelp(root->left, root->right);
+}
+bool isSymmetricHelp(TreeNode* left, TreeNode* right){
+    if(left == NULL || right == NULL) return left == right;
+
+    if(left->val != right->val) return false;
+    return isSymmetricHelp(left->left, right->right) && (isSymmetricHelp(left->right, right->left));
+}
+
+TC-> O(N) SC-> O(N)
+
+
+//L26. Print Root to Node Path in Binary Tree | C++ | Java
+bool getPath(TreeNode* root, vector<int> &arr, int x){
+    if(!root) return false;
+    arr.push_back(root->val);
+    if(root->val == x) return true;
+    if(getPath(root->left, arr, x) || getPath(root->right, arr, x)) return true;
+
+    arr.pop_back();
+    return false;
+}
+vector<int> solve(TreeNode* A, int B){
+    vector<int> arr;
+    if(A == NULL){
+        return arr;
+    }
+    getPath(A, arr, B);
+    return arr;
+}
+TC-> O(N) SC-> O(N)
+
