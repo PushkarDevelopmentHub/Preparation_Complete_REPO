@@ -222,7 +222,7 @@ bool checkforBalancedParenthese(string str){
       if(st.empty()) return false;
       char ch = st.top();
       st.pop();
-      if((str[i] == '(' && str[i] == ')') || (str[i] == '[]' && str[i] == ']') || (str[i] == '{}' && str[i] == '}')){
+      if((ch == '(' && str[i] == ')') || (ch == '[' && str[i] == ']') || (ch == '{' && str[i] == '}')){
         continue;
       }else{
         return false;
