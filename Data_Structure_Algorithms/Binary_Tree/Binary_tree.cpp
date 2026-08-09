@@ -90,10 +90,66 @@ vector<int> postOrderTraversal(TreeNode* root){
 
 
 // L12. Iterative Postorder Traversal using 1 Stack | C++ | Java | Binary Trees
+vector<int> postOderTraversal(TreeNode* root){
+    vector<int> postOrder;
+    if(root == NULL) return postOrder;
+    stack<TreeNode*> st;
+    TreeNode* curr = root;
+    while(curr != NULL || !st.empty()){
+        if(curr != NULL){
+            st.push(curr);
+            curr = curr->left;
+        }else{
+            TreeNode* temp = st.top()->right;
+            if(temp == NULL){
+                temp = st.top();
+                st.pop();
+                postOrder.push_back(temp->val);
+                while(!st.empty() && temp == st.top()->right){
+                    temp = st.top();
+                    st.pop();
+                    postOrder.push_back(temp->val);
+                }
+            }else{
+                curr = temp;
+            }
+        }
+    }
+    return postOrder;
+}
 
+TC-> O(N) SC-> O(N)
 
+// L13. Preorder Inorder Postorder Traversals in One Traversal | C++ | Java | Stack | Binary Trees
+vector<in> preInpostTraversal(TreeNode* root){
+    stack<pair<TreeNode*, int>> st;
+    st.push{{root, 1}};
+    vector<int> pre, in, post;
+    if(root == NULL) return;
+    while(!st.empty()){
+        auto it = st.top();
+        st.pop();
+        if(it.second == 1){
+            pre.push_back(it.first->val);
+            it.second++;
+            st.push(it);
 
+            if(it.first->left != NULL){
+                st.push({it.first->left, 1});
+            }
+        }else if(it.second == 2){
+            in.push_back(it.first->val);
+            it.second++;
+            st.push(it);
 
+            if(it.first->right != NULL){
+                st.push({it.first->right, 1});
+            }
+        }else{
+            post.push_back(it.first->val);
+        }
+    }
+}
 
 
 //L14. Maximum Depth in Binary Tree | Height of Binary Tree | C++ | Java
